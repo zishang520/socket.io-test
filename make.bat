@@ -12,7 +12,8 @@ set https_proxy=%http_proxy%
 if /i "%args%"=="update" goto %args%
 if /i "%args%"=="install" goto %args%
 if /i "%args%"=="all" goto %args%
-if /i "%args%"=="run" goto %args%
+if /i "%args%"=="engine.io" goto %args%
+if /i "%args%"=="socket.io" goto %args%
 if /i "%args%"=="init" goto %args%
 
 goto DEFAULT_CASE
@@ -32,9 +33,13 @@ goto DEFAULT_CASE
     CALL go build --mod=mod -ldflags "-s -w -extldflags \"-static\"" -o bin\main.exe main.go
 
     GOTO END_CASE
-:run
-    CALL go build --mod=mod -o bin\main.exe main.go
-    CALL bin\main.exe
+:engine.io
+    CALL go build --mod=mod -o bin\engine.exe engine.io.go
+    CALL bin\engine.exe
+    GOTO END_CASE
+:socket.io
+    CALL go build --mod=mod -o bin\socket.exe socket.io.go
+    CALL bin\socket.exe
     GOTO END_CASE
 :init
     GOTO END_CASE

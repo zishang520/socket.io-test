@@ -1,4 +1,4 @@
-.PHONY: default update install all run init fmt
+.PHONY: default update install all engine.io socket.io init fmt
 export GOPATH:=$(shell pwd)/vendor
 # Set the GOPROXY environment variable
 export GOPROXY=https://goproxy.io,direct
@@ -17,8 +17,12 @@ update:
 fmt:
 	go fmt ...
 
-run:
-	go build --mod=mod -o "bin/main" main.go
+engine.io:
+	go build --mod=mod -o "bin/engine" main.go
+	"bin/main"
+
+socket.io:
+	go build --mod=mod -o "bin/socket" main.go
 	"bin/main"
 
 init:

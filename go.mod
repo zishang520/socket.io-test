@@ -2,9 +2,10 @@ module test
 
 go 1.18
 
-replace github.com/zishang520/engine.io => ../engine.io
+replace github.com/zishang520/socket.io => ../socket.io/
 
-require github.com/zishang520/engine.io v1.0.0
+require github.com/zishang520/engine.io v1.0.8
+require github.com/zishang520/socket.io v1.0.0
 
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
