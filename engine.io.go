@@ -28,6 +28,7 @@ func main() {
 		Origin:      "*",
 		Credentials: true,
 	})
+	utils.Log().Info("%v", types.NewSet(serverOptions))
 
 	httpServer := types.CreateServer(nil).Listen("127.0.0.1:4444", nil)
 

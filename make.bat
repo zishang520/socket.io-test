@@ -45,8 +45,6 @@ goto DEFAULT_CASE
     GOTO END_CASE
 :DEFAULT_CASE
     CALL go mod tidy
-    set CGO_ENABLED=0
-    CALL go build --mod=mod -ldflags "-s -w -extldflags \"-static\"" -o bin\main.exe main.go
     GOTO END_CASE
 :END_CASE
     GOTO :EOF

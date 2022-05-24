@@ -29,4 +29,4 @@ init:
 
 
 all:
-	CGO_ENABLED=0 go build --mod=mod  -ldflags '-s -w -extldflags "-static"' -o "bin/engineio" main.go
+
