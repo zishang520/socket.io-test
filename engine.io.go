@@ -28,7 +28,12 @@ func main() {
 		Origin:      "*",
 		Credentials: true,
 	})
-	utils.Log().Info("%v", types.NewSet(serverOptions))
+	var a func() = func() {}
+	for k, _ := range map[any]any{&a: 1} {
+		(*(k.(*func())))()
+		utils.Log().Info("%T", k)
+	}
+	utils.Log().Info("%v", types.NewSet(&a))
 
 	httpServer := types.CreateServer(nil).Listen("127.0.0.1:4444", nil)
 
