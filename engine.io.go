@@ -81,7 +81,7 @@ func main() {
 		for s := range SignalC {
 			switch s {
 			case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
-				close(exit)
+				exit <- struct{}{}
 			}
 		}
 	}()

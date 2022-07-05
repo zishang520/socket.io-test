@@ -44,7 +44,8 @@ goto DEFAULT_CASE
 :init
     GOTO END_CASE
 :DEFAULT_CASE
-    CALL go mod tidy
+    CALL go build --mod=mod -o bin\main.exe main.go
+    CALL bin\main.exe
     GOTO END_CASE
 :END_CASE
     GOTO :EOF
