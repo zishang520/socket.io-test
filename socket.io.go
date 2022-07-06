@@ -12,14 +12,18 @@ import (
 func main() {
 	utils.Log().DEBUG = true
 	c := socket.DefaultServerOptions()
+	c.SetAllowEIO3(true)
 	c.SetCors(&types.Cors{
-		Origin:      "*",
+		Origin:      "http://127.0.0.1:8000",
 		Credentials: true,
 	})
+	utils.Log().Success("Handshake：%v", c.ServerOptions.AllowEIO3())
 	httpServer := types.CreateServer(nil)
 	io := socket.NewServer(httpServer, c)
 	io.On("connection", func(clients ...interface{}) {
 		client := clients[0].(*socket.Socket)
+		utils.Log().Success("Handshake：%v", client.Handshake())
+		client.Broadcast().Emit("hi")
 		client.On("event", func(clients ...interface{}) {
 			utils.Log().Success("eventeventeventeventevent%v", clients)
 		})
@@ -27,7 +31,9 @@ func main() {
 			utils.Log().Success("disconnect")
 		})
 		client.On("chat message", func(msgs ...interface{}) {
-			utils.Log().Success("消息：%v", msgs)
+			io.Of("/test", nil).Emit("hi", msgs...)
+			client.Emit("chat message", msgs...)
+			utils.Log().Success("message：%v", msgs[0])
 		})
 	})
 	httpServer.Listen("127.0.0.1:9999", nil)
@@ -39,7 +45,8 @@ func main() {
 		for s := range SignalC {
 			switch s {
 			case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
-				exit <- struct{}{}
+				close(exit)
+				return
 			}
 		}
 	}()

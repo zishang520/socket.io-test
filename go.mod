@@ -6,7 +6,7 @@ replace github.com/zishang520/socket.io => ../socket.io/
 
 replace github.com/zishang520/engine.io => ../engine.io/
 
-require github.com/zishang520/engine.io v1.1.0
+require github.com/zishang520/engine.io v1.1.2
 
 require github.com/zishang520/socket.io v0.0.0
 
