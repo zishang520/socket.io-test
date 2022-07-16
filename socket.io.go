@@ -4,6 +4,7 @@ import (
 	"github.com/zishang520/engine.io/types"
 	"github.com/zishang520/engine.io/utils"
 	"github.com/zishang520/socket.io/socket"
+	"io"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -25,6 +26,15 @@ func main() {
 	})
 	utils.Log().Success("AllowEIO3：%v", c.ServerOptions.AllowEIO3())
 	httpServer := types.CreateServer(nil)
+	dir, _ := os.Getwd()
+	httpServer.HandleFunc("/index", func(w http.ResponseWriter, r *http.Request) {
+		file, err := http.Dir(dir).Open("index.html")
+		if err != nil {
+			http.Error(w, "file not found", http.StatusNotFound)
+			return
+		}
+		io.Copy(w, file)
+	})
 	io := socket.NewServer(httpServer, c)
 	io.Of(
 		regexp.MustCompile(`/\w+`),
