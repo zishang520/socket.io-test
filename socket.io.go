@@ -52,6 +52,10 @@ func main() {
 		client.On("chat message", func(msgs ...interface{}) {
 			io.Of("/test", nil).Emit("hi", msgs...)
 			client.Emit("chat message", msgs...)
+			client.Emit("chat message", map[string]interface{}{
+				"message": types.NewStringBufferString("xxx"),
+				"bin":     types.NewBytesBuffer([]byte{0, 1, 2, 3, 4, 5}),
+			})
 			utils.Log().Success("/ tets message：%v", msgs[0])
 		})
 	})
