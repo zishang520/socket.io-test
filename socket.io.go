@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"regexp"
 	"syscall"
+	"time"
 )
 
 func main() {
@@ -41,7 +42,10 @@ func main() {
 		})
 		client.On("chat message", func(msgs ...interface{}) {
 			io.Of("/test", nil).Emit("hi", msgs...)
-			client.Emit("chat message", msgs...)
+			client.Timeout(2000*time.Millisecond).Emit("chat message", msgs[0], func(err error, args ...interface{}) {
+				utils.Log().Error("OUT %v %v", err, args)
+			})
+			client.To("xxx")
 			utils.Log().Success("/ tets message：%v", msgs[0])
 		})
 	})

@@ -1,24 +1,15 @@
 package main
 
 import (
-	"fmt"
+	// "bytes"
+	"github.com/zishang520/engine.io/types"
+	"github.com/zishang520/engine.io/utils"
+	// "io"
+	// "strings"
 )
 
-type A struct {
-	s bool
-}
-
-type B struct {
-	c bool
-}
-
-type C struct {
-	A
-	B
-	s bool
-}
-
 func main() {
-	a := interface{}(&C{})
-	fmt.Printf("%v", a.(A))
+	a := types.NewStringBufferString("aaaaaaaa,")
+	str, err := a.ReadString('x')
+	utils.Log().Success("io.Reader %v %v", str, err)
 }

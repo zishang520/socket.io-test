@@ -28,12 +28,14 @@ func main() {
 		Origin:      "*",
 		Credentials: true,
 	})
-	var a func() = func() {}
-	for k, _ := range map[any]any{&a: 1} {
-		(*(k.(*func())))()
-		utils.Log().Info("%T", k)
-	}
-	utils.Log().Info("%v", types.NewSet(&a))
+	xxx := types.NewSet("1", "2", "3", "5")
+	utils.Log().Info("%v", xxx)
+	cache := xxx.All()
+	utils.Log().Info("%v", cache)
+	delete(cache, "1")
+	utils.Log().Info("%v", cache)
+	utils.Log().Info("%v", xxx)
+	utils.Log().Fatal("die")
 
 	httpServer := types.CreateServer(nil).Listen("127.0.0.1:4444", nil)
 
