@@ -25,7 +25,7 @@ func main() {
 		Origin:      "http://127.0.0.1:8000",
 		Credentials: true,
 	})
-	utils.Log().Success("AllowEIO3：%v", c.ServerOptions.AllowEIO3())
+	utils.Log().Success("AllowEIO3：%v", c.AllowEIO3())
 	httpServer := types.CreateServer(nil)
 	dir, _ := os.Getwd()
 	httpServer.HandleFunc("/index", func(w http.ResponseWriter, r *http.Request) {
