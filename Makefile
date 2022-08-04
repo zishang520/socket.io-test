@@ -18,12 +18,12 @@ fmt:
 	go fmt ...
 
 engine.io:
-	go build --mod=mod -o "bin/engine" main.go
-	"bin/main"
+	go build --mod=mod  -ldflags '-s -w -extldflags "-static"' -o "bin/engine" engine.io.go
+	"bin/engine"
 
 socket.io:
-	go build --mod=mod -o "bin/socket" main.go
-	"bin/main"
+	go build --mod=mod  -ldflags '-s -w -extldflags "-static"' -o "bin/socket" socket.io.go
+	"bin/socket"
 
 init:
 

@@ -20,7 +20,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Hello World")
 }
 func main() {
-	utils.Log().DEBUG = true
+	// utils.Log().DEBUG = true
 
 	serverOptions := &config.ServerOptions{}
 	serverOptions.SetAllowEIO3(true)
@@ -29,13 +29,12 @@ func main() {
 		Credentials: true,
 	})
 	xxx := types.NewSet("1", "2", "3", "5")
-	utils.Log().Info("%v", xxx)
+	utils.Log().Debug("%v", xxx)
 	cache := xxx.All()
-	utils.Log().Info("%v", cache)
+	utils.Log().Debug("%v", cache)
 	delete(cache, "1")
-	utils.Log().Info("%v", cache)
-	utils.Log().Info("%v", xxx)
-	utils.Log().Fatal("die")
+	utils.Log().Debug("%v", cache)
+	utils.Log().Debug("%v", xxx)
 
 	httpServer := types.CreateServer(nil).Listen("127.0.0.1:4444", nil)
 
@@ -63,11 +62,11 @@ func main() {
 		socket := sockets[0].(engine.Socket)
 		socket.On("message", func(args ...interface{}) {
 			socket.Send(types.NewStringBufferString("xxx"), nil, nil)
-			utils.Log().Info("%v", socket.Protocol())
-			utils.Log().Info("%v", socket.Id())
-			utils.Log().Info("%v", socket.Request().Headers())
-			utils.Log().Info("%v", socket.Request().Query())
-			utils.Log().Info("'%v'", socket.Request().Request().Body)
+			utils.Log().Debug("%v", socket.Protocol())
+			utils.Log().Debug("%v", socket.Id())
+			utils.Log().Debug("%v", socket.Request().Headers())
+			utils.Log().Debug("%v", socket.Request().Query())
+			utils.Log().Debug("'%v'", socket.Request().Request().Body)
 		})
 		socket.On("close", func(...interface{}) {
 			utils.Log().Println("client close.")
