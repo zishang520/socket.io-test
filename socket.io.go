@@ -36,7 +36,7 @@ func main() {
 		}
 		io.Copy(w, file)
 	})
-	io := socket.NewServer("127.0.0.1:7777", c)
+	io := socket.NewServer(httpServer, c)
 	io.Of(
 		regexp.MustCompile(`/\w+`),
 		nil,

@@ -56,7 +56,15 @@ func main() {
 		w.WriteHeader(200)
 		fmt.Fprint(w, `OK`)
 	})
-	engineServer := engine.New(httpServer, serverOptions)
+	engineServer := engine.New(serverOptions)
+
+	http.ListenAndServe(":8090", engineServer)
+
+	httpServer.HandleFunc("/test", engineServer.ServeHTTP)
+
+	httpServer.On("close", func(...any) {
+		engineServer.Close()
+	})
 
 	engineServer.On("connection", func(sockets ...interface{}) {
 		socket := sockets[0].(engine.Socket)
