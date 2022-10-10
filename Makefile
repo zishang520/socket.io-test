@@ -19,11 +19,11 @@ fmt:
 
 engine.io:
 	go build --mod=mod  -ldflags '-s -w -extldflags "-static"' -o "bin/engine" engine.io.go
-	"bin/engine"
+	bash -c "bin/engine"
 
 socket.io:
 	go build --mod=mod  -ldflags '-s -w -extldflags "-static"' -o "bin/socket" socket.io.go
-	"bin/socket"
+	bash -c "bin/socket"
 
 init:
 

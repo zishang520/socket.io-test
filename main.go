@@ -2,31 +2,60 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	_ "net/http/pprof"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/zishang520/engine.io/types"
-	"github.com/zishang520/socket.io/parser"
+	"github.com/zishang520/engine.io/utils"
 )
 
-func main() {
-	_parser := parser.NewParser()
-	data := _parser.Encoder().Encode(&parser.Packet{
-		Type: parser.EVENT,
-		Nsp:  "/name",
-		Data: []any{
-			types.NewBytesBuffer([]byte{0, 1, 2, 3, 4, 5}),
-		},
-		/*"aaaa",
-		types.NewStringBufferString("xxx"),
-		types.NewBytesBuffer([]byte{0, 1, 2, 3, 4, 5}),
-		types.NewBytesBuffer([]byte{0, 1, 2, 3, 4, 5}),
-		types.NewBytesBuffer([]byte{0, 1, 2, 3, 4, 5}),*/
+type Test struct{ B int }
 
+func index(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Hello World")
+}
+func main() {
+
+	httpServer := types.CreateServer(nil).Listen("127.0.0.1:3000", nil)
+
+	httpServer.HandleFunc("/engine.io", func(w http.ResponseWriter, r *http.Request) {
+		ctx := types.NewHttpContext(w, r)
+		ctx.On("close", func(...any) {
+			fmt.Println("connection closed")
+		})
+		// ctx.Write(nil)
+		utils.SetTimeOut(func() {
+			if ctx != nil {
+				if h, ok := ctx.Response().(http.Hijacker); ok {
+					if netConn, _, err := h.Hijack(); err == nil {
+						if netConn.Close() == nil && !ctx.IsDone() {
+							ctx.Flush()
+						}
+					}
+				}
+			}
+		}, 2000*time.Millisecond)
+		<-ctx.Done()
 	})
-	_parser.Decoder().On("decoded", func(args ...any) {
-		fmt.Printf("decoded ----> %v\n", args[0].(*parser.Packet))
-	})
-	// fmt.Printf("d -> %v\n", _parser.Decoder().Add(data))
-	fmt.Printf("%v\n", data)
-	for _, v := range data {
-		fmt.Printf("d -> %v\n", _parser.Decoder().Add(v))
-	}
+
+	exit := make(chan struct{})
+	SignalC := make(chan os.Signal)
+
+	signal.Notify(SignalC, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	go func() {
+		for s := range SignalC {
+			switch s {
+			case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
+				exit <- struct{}{}
+			}
+		}
+	}()
+
+	<-exit
+	httpServer.Close(nil)
+	os.Exit(0)
 }

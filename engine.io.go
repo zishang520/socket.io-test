@@ -2,16 +2,18 @@ package main
 
 import (
 	"fmt"
-	// "github.com/julienschmidt/httprouter"
+	"io"
+	"net/http"
+	"os"
+	"os/signal"
+	"path"
+	"syscall"
+	// "time"
+
 	"github.com/zishang520/engine.io/config"
 	"github.com/zishang520/engine.io/engine"
 	"github.com/zishang520/engine.io/types"
 	"github.com/zishang520/engine.io/utils"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	// "time"
 )
 
 type Test struct{ B int }
@@ -46,21 +48,18 @@ func main() {
 	// 	httpServer.Close(nil)
 	// }, 12000*time.Millisecond)
 
-	httpServer.HandleFunc("/admin", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Content-Type", "text/html; charset=UTF-8")
-		w.WriteHeader(200)
-		fmt.Fprint(w, r.URL.Path)
-	})
-	httpServer.HandleFunc("/admin/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Content-Type", "text/html; charset=UTF-8")
-		w.WriteHeader(200)
-		fmt.Fprint(w, `OK`)
+	dir, _ := os.Getwd()
+	httpServer.HandleFunc("/public/", func(w http.ResponseWriter, r *http.Request) {
+		file, err := http.Dir(dir).Open(path.Clean("/" + r.URL.Path))
+		if err != nil {
+			http.Error(w, "file not found:"+path.Clean("/"+r.URL.Path), http.StatusNotFound)
+			return
+		}
+		io.Copy(w, file)
 	})
 	engineServer := engine.New(serverOptions)
 
-	http.ListenAndServe(":8090", engineServer)
-
-	httpServer.HandleFunc("/test", engineServer.ServeHTTP)
+	engineServer.Attach(httpServer, nil)
 
 	httpServer.On("close", func(...any) {
 		engineServer.Close()
