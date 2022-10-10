@@ -30,21 +30,21 @@ goto DEFAULT_CASE
     echo ========================
     echo build
     set CGO_ENABLED=0
-    CALL go build --mod=mod -ldflags "-s -w -extldflags \"-static\"" -o bin\main.exe main.go
+    CALL go build --mod=mod -race -ldflags "-s -w -extldflags \"-static\"" -o bin\main.exe main.go
 
     GOTO END_CASE
 :engine.io
-    CALL go build --mod=mod -o bin\engine.exe engine.io.go
+    CALL go build --mod=mod -race -o bin\engine.exe engine.io.go
     CALL bin\engine.exe
     GOTO END_CASE
 :socket.io
-    CALL go build --mod=mod -o bin\socket.exe socket.io.go
+    CALL go build --mod=mod -race -o bin\socket.exe socket.io.go
     CALL bin\socket.exe
     GOTO END_CASE
 :init
     GOTO END_CASE
 :DEFAULT_CASE
-    CALL go build --mod=mod -o bin\main.exe main.go
+    CALL go build --mod=mod -race -o bin\main.exe main.go
     CALL bin\main.exe
     GOTO END_CASE
 :END_CASE
