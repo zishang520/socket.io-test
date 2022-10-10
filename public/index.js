@@ -9,7 +9,7 @@ function $(id) {
 }
 
 // chart
-for (var i = 0; i < 1; i++) {
+for (var i = 0; i < 1000; i++) {
     // socket
     const socket = new eio.Socket();
     let last;

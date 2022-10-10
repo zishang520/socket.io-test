@@ -11,7 +11,7 @@ import (
 	"os/signal"
 	"regexp"
 	"syscall"
-	"time"
+	// "time"
 )
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
 	utils.Log().Success("AllowEIO3：%v", c.AllowEIO3())
 	httpServer := types.CreateServer(nil)
 	dir, _ := os.Getwd()
-	httpServer.HandleFunc("/index", func(w http.ResponseWriter, r *http.Request) {
+	httpServer.HandleFunc("/index.html", func(w http.ResponseWriter, r *http.Request) {
 		file, err := http.Dir(dir).Open("index.html")
 		if err != nil {
 			http.Error(w, "file not found", http.StatusNotFound)
@@ -42,26 +42,21 @@ func main() {
 		nil,
 	).On("connection", func(clients ...interface{}) {
 		client := clients[0].(*socket.Socket)
-		utils.Log().Success("/ tets Handshake：%v", client.Handshake())
-		client.Broadcast().Emit("hi tets")
+		utils.Log().Success("/ test Handshake：%v", client.Handshake())
+		client.Broadcast().Emit("hi test")
 		client.On("event", func(clients ...interface{}) {
-			utils.Log().Success("/ tets eventeventeventeventevent%v", clients)
+			utils.Log().Success("/ test eventeventeventeventevent%v", clients)
 		})
 		client.On("disconnect", func(...interface{}) {
-			utils.Log().Success("/ tets disconnect")
+			utils.Log().Success("/ test disconnect")
 		})
 		client.On("chat message", func(msgs ...interface{}) {
 			io.Of("/test", nil).Emit("hi", msgs...)
-			client.Timeout(2000*time.Millisecond).Emit("chat message", msgs[0], func(err error, args ...interface{}) {
-				utils.Log().Error("OUT %v %v", err, args)
-			})
-			client.To("xxx")
 			client.Emit("chat message", msgs...)
 			client.Emit("chat message", map[string]interface{}{
 				"message": types.NewStringBufferString("xxx"),
 				"bin":     types.NewBytesBuffer([]byte{0, 1, 2, 3, 4, 5}),
 			})
-			utils.Log().Success("/ tets message：%v", msgs[0])
 		})
 	})
 	io.On("connection", func(clients ...interface{}) {
