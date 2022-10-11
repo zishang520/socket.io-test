@@ -30,55 +30,57 @@
         return document.getElementById(id);
     }
 
-    let last;
-    const manager = new io.Manager("ws://127.0.0.1:9999");
+    for (var i = 0; i < 500; i++) {
+        let last;
+        const manager = new io.Manager("ws://127.0.0.1:9999");
 
-    const socket = manager.socket("/test", {
-        reconnectionDelayMax: 10000,
-        auth: { token: "123" },
-        query: {
-            "my-key": "my-value"
+        const socket = manager.socket("/test", {
+            reconnectionDelayMax: 10000,
+            auth: { token: "123" },
+            query: {
+                "my-key": "my-value"
+            }
+        }); // main namespace
+
+        function send() {
+            last = new Date();
+            socket.emit('chat message', "input.value");
+            $('transport').innerHTML = socket.nsp;
         }
-    }); // main namespace
 
-    function send() {
-        last = new Date();
-        socket.emit('chat message', "input.value");
-        $('transport').innerHTML = socket.nsp;
+        socket.on('connect', () => {
+            send();
+        });
+
+        socket.on('close', () => {
+            $('transport').innerHTML = '(disconnected)';
+        });
+
+        socket.on('chat message', () => {
+            const latency = new Date() - last;
+            $('latency').innerHTML = latency + 'ms';
+            setTimeout(send, 100);
+        });
+
+        // var messages = document.getElementById('messages');
+        // var form = document.getElementById('form');
+        // var input = document.getElementById('input');
+
+        // form.addEventListener('submit', function(e) {
+        //     e.preventDefault();
+        //     if (input.value) {
+        //         socket.emit('chat message', input.value);
+        //         input.value = '';
+        //     }
+        // });
+
+        // socket.on('chat message', function(msg) {
+        //     var item = document.createElement('li');
+        //     item.textContent = msg;
+        //     messages.appendChild(item);
+        //     window.scrollTo(0, document.body.scrollHeight);
+        // });
     }
-
-    socket.on('connect', () => {
-        send();
-    });
-
-    socket.on('close', () => {
-        $('transport').innerHTML = '(disconnected)';
-    });
-
-    socket.on('chat message', () => {
-        const latency = new Date() - last;
-        $('latency').innerHTML = latency + 'ms';
-        setTimeout(send, 100);
-    });
-
-    // var messages = document.getElementById('messages');
-    // var form = document.getElementById('form');
-    // var input = document.getElementById('input');
-
-    // form.addEventListener('submit', function(e) {
-    //     e.preventDefault();
-    //     if (input.value) {
-    //         socket.emit('chat message', input.value);
-    //         input.value = '';
-    //     }
-    // });
-
-    // socket.on('chat message', function(msg) {
-    //     var item = document.createElement('li');
-    //     item.textContent = msg;
-    //     messages.appendChild(item);
-    //     window.scrollTo(0, document.body.scrollHeight);
-    // });
     </script>
 </body>
 
