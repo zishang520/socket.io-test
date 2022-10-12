@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	utils.Log().DEBUG = true
+	log.DEBUG = true
 	go func() {
 		utils.Log().Success("%v", http.ListenAndServe("localhost:6060", nil))
 	}()
