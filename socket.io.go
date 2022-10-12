@@ -1,9 +1,6 @@
 package main
 
 import (
-	"github.com/zishang520/engine.io/types"
-	"github.com/zishang520/engine.io/utils"
-	"github.com/zishang520/socket.io/socket"
 	"io"
 	"net/http"
 	_ "net/http/pprof"
@@ -12,6 +9,11 @@ import (
 	"regexp"
 	"syscall"
 	// "time"
+
+	"github.com/zishang520/engine.io/log"
+	"github.com/zishang520/engine.io/types"
+	"github.com/zishang520/engine.io/utils"
+	"github.com/zishang520/socket.io/socket"
 )
 
 func main() {
