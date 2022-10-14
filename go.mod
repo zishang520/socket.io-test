@@ -6,13 +6,12 @@ replace github.com/zishang520/socket.io => ../socket.io/
 
 replace github.com/zishang520/engine.io => ../engine.io/
 
-require github.com/zishang520/engine.io v1.1.11
+require github.com/zishang520/engine.io v1.1.13
 
 require github.com/zishang520/socket.io v1.0.4
 
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
-	github.com/google/brotli/go/cbrotli v0.0.0-20220512075048-9801a2c5d6c6 // indirect
 	github.com/gookit/color v1.5.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect

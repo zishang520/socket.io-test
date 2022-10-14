@@ -66,7 +66,7 @@ func main() {
 	engineServer.On("connection", func(sockets ...interface{}) {
 		socket := sockets[0].(engine.Socket)
 		socket.On("message", func(args ...interface{}) {
-			socket.Send(types.NewStringBufferString("66666666"), nil, nil)
+			socket.Send(types.NewBytesBufferString("66666666"), nil, nil)
 			// utils.Log().Debug("%v", socket.Protocol())
 			// utils.Log().Debug("%v", socket.Id())
 			// utils.Log().Debug("%v", socket.Request().Headers())

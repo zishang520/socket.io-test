@@ -9,9 +9,11 @@ function $(id) {
 }
 
 // chart
-for (var i = 0; i < 1000; i++) {
+for (var i = 0; i < 1; i++) {
     // socket
-    const socket = new eio.Socket();
+    const socket = new eio.Socket({
+        forceBase64: true
+    });
     let last;
 
     function send() {
@@ -26,6 +28,7 @@ for (var i = 0; i < 1000; i++) {
 
     socket.on('close', () => {
         $('transport').innerHTML = '(disconnected)';
+        console.log("已经关闭连接")
     });
 
     socket.on('message', () => {

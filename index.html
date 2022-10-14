@@ -24,15 +24,15 @@
     <form id="form" action="">
         <input id="input" autocomplete="off" /><button>Send</button>
     </form>
-    <script type="text/javascript" src="http://127.0.0.1:9999/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="http://127.0.0.1:9999/socket.io/socket.io.min.js"></script>
     <script>
     function $(id) {
         return document.getElementById(id);
     }
 
-    for (var i = 0; i < 500; i++) {
+    for (var i = 0; i < 100; i++) {
         let last;
-        const manager = new io.Manager("ws://127.0.0.1:9999");
+        const manager = new io.Manager("ws://127.0.0.1:9999", {});
 
         const socket = manager.socket("/test", {
             reconnectionDelayMax: 10000,
@@ -44,7 +44,9 @@
 
         function send() {
             last = new Date();
-            socket.emit('chat message', "input.value");
+            socket.emit('chat message', {
+                "message": 'types.NewStringBufferString("xxx")',
+            });
             $('transport').innerHTML = socket.nsp;
         }
 
@@ -54,6 +56,7 @@
 
         socket.on('close', () => {
             $('transport').innerHTML = '(disconnected)';
+            console.log('关闭');
         });
 
         socket.on('chat message', () => {

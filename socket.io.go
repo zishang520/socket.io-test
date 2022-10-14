@@ -44,42 +44,40 @@ func main() {
 		nil,
 	).On("connection", func(clients ...interface{}) {
 		client := clients[0].(*socket.Socket)
-		utils.Log().Success("/ test Handshake：%v", client.Handshake())
+		// utils.Log().Success("/ test Handshake：%v", client.Handshake())
 		client.Broadcast().Emit("hi test")
 		client.On("event", func(clients ...interface{}) {
-			utils.Log().Success("/ test eventeventeventeventevent%v", clients)
+			// utils.Log().Success("/ test eventeventeventeventevent%v", clients)
 		})
 		client.On("disconnect", func(...interface{}) {
-			utils.Log().Success("/ test disconnect")
+			// utils.Log().Success("/ test disconnect")
 		})
 		client.On("chat message", func(msgs ...interface{}) {
-			io.Of("/test", nil).Emit("hi", msgs...)
-			client.Emit("chat message", msgs...)
+			// io.Of("/test", nil).Emit("hi", msgs...)
 			client.Emit("chat message", map[string]interface{}{
 				"message": types.NewStringBufferString("xxx"),
-				"bin":     types.NewBytesBuffer([]byte{0, 1, 2, 3, 4, 5}),
 			})
 		})
 	})
-	io.On("connection", func(clients ...interface{}) {
-		client := clients[0].(*socket.Socket)
-		utils.Log().Success("Handshake：%v", client.Handshake())
-		client.Broadcast().Emit("hi")
-		client.On("event", func(clients ...interface{}) {
-			utils.Log().Success("eventeventeventeventevent%v", clients)
-		})
-		client.On("disconnect", func(...interface{}) {
-			utils.Log().Success("disconnect")
-		})
-		client.On("chat message", func(msgs ...interface{}) {
-			io.Of("/test", nil).Emit("hi", msgs...)
-			client.Emit("chat message", msgs...)
-			utils.Log().Success("message：%v", msgs[0])
-			utils.Log().Success("FetchSockets %v", io.Adapter().FetchSockets(&socket.BroadcastOptions{
-				Rooms: types.NewSet[socket.Room]("/"),
-			}))
-		})
-	})
+	// io.On("connection", func(clients ...interface{}) {
+	// 	client := clients[0].(*socket.Socket)
+	// 	utils.Log().Success("Handshake：%v", client.Handshake())
+	// 	client.Broadcast().Emit("hi")
+	// 	client.On("event", func(clients ...interface{}) {
+	// 		utils.Log().Success("eventeventeventeventevent%v", clients)
+	// 	})
+	// 	client.On("disconnect", func(...interface{}) {
+	// 		utils.Log().Success("disconnect")
+	// 	})
+	// 	client.On("chat message", func(msgs ...interface{}) {
+	// 		io.Of("/test", nil).Emit("hi", msgs...)
+	// 		client.Emit("chat message", msgs...)
+	// 		utils.Log().Success("message：%v", msgs[0])
+	// 		utils.Log().Success("FetchSockets %v", io.Adapter().FetchSockets(&socket.BroadcastOptions{
+	// 			Rooms: types.NewSet[socket.Room]("/"),
+	// 		}))
+	// 	})
+	// })
 	httpServer.Listen("127.0.0.1:9999", nil)
 	exit := make(chan struct{})
 	SignalC := make(chan os.Signal)
