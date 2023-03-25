@@ -2,62 +2,54 @@ package main
 
 import (
 	"fmt"
-	// "time"
-	// "github.com/zishang520/engine.io/utils"
 )
 
-type Test struct{ B int }
+type Test interface {
+	Foo()
+	Foo1()
+}
 
-func aaaa(s *string) {
-	*s = "1"
+type test struct {
+	_self Test
 }
-func index(a int) (b int, s string) {
-	aaaa(&s)
-	b = a
-	return a, s
+
+func (t *test) self() Test {
+	if t._self != nil {
+		return t._self
+	}
+	return t
 }
+func (t *test) Super(c Test) {
+	t._self = c
+}
+
+func (t *test) Foo() {
+	fmt.Println("test foo")
+}
+
+func (t *test) Foo1() {
+}
+
+func (t *test) Test() {
+	t.Foo()
+	t.self().Foo()
+	t.self().Foo1()
+}
+
+type A struct {
+	*test
+}
+
+func (t *A) Foo() {
+	fmt.Println("A foo")
+}
+
+func (t *A) Foo1() {
+	fmt.Println("A foo1")
+}
+
 func main() {
-	a, s := index(0)
-	fmt.Println(a, s)
-	s = "9"
-	fmt.Println(index(1))
-	fmt.Println(a, s)
-	// httpServer := types.CreateServer(nil).Listen("127.0.0.1:3000", nil)
-
-	// httpServer.HandleFunc("/engine.io", func(w http.ResponseWriter, r *http.Request) {
-	// 	ctx := types.NewHttpContext(w, r)
-	// 	ctx.On("close", func(...any) {
-	// 		fmt.Println("connection closed")
-	// 	})
-	// 	// ctx.Write(nil)
-	// 	utils.SetTimeOut(func() {
-	// 		if ctx != nil {
-	// 			if h, ok := ctx.Response().(http.Hijacker); ok {
-	// 				if netConn, _, err := h.Hijack(); err == nil {
-	// 					if netConn.Close() == nil && !ctx.IsDone() {
-	// 						ctx.Flush()
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 	}, 2000*time.Millisecond)
-	// 	<-ctx.Done()
-	// })
-
-	// exit := make(chan struct{})
-	// SignalC := make(chan os.Signal)
-
-	// signal.Notify(SignalC, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	// go func() {
-	// 	for s := range SignalC {
-	// 		switch s {
-	// 		case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
-	// 			exit <- struct{}{}
-	// 		}
-	// 	}
-	// }()
-
-	// <-exit
-	// httpServer.Close(nil)
-	// os.Exit(0)
+	x := &A{&test{}}
+	x.Super(x)
+	x.Test()
 }
