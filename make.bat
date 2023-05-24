@@ -3,7 +3,6 @@
 set "args=%*"
 pushd "%~dp0"
 setlocal ENABLEDELAYEDEXPANSION
-set GOPATH="%~dp0vendor"
 rem Set the GOPROXY environment variable
 Set GOPROXY=https://goproxy.io,direct
 set http_proxy=socks5://127.0.0.1:1080
@@ -18,10 +17,8 @@ if /i "%args%"=="init" goto %args%
 
 goto DEFAULT_CASE
 :update
-    if not exist vendor (
-        CALL go mod vendor
-    )
-    CALL go mod tidy -v
+    CALL go mod tidy
+    CALL go mod vendor
     GOTO END_CASE
 :install
     CALL go mod vendor -v
@@ -34,16 +31,19 @@ goto DEFAULT_CASE
 
     GOTO END_CASE
 :engine.io
+    set CGO_ENABLED=1
     CALL go build --mod=mod -race -o bin\engine.exe engine.io.go
     CALL bin\engine.exe
     GOTO END_CASE
 :socket.io
+    set CGO_ENABLED=1
     CALL go build --mod=mod -race -o bin\socket.exe socket.io.go
     CALL bin\socket.exe
     GOTO END_CASE
 :init
     GOTO END_CASE
 :DEFAULT_CASE
+    set CGO_ENABLED=1
     CALL go build --mod=mod -race -o bin\main.exe main.go
     CALL bin\main.exe
     GOTO END_CASE

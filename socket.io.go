@@ -6,6 +6,7 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
+	"path"
 	"regexp"
 	"syscall"
 	// "time"
@@ -78,7 +79,8 @@ func main() {
 	// 		}))
 	// 	})
 	// })
-	httpServer.Listen("127.0.0.1:9999", nil)
+
+	httpServer.ListenHttp2TLS("127.0.0.1:9999", path.Join(dir, "snakeoil.crt"), path.Join(dir, "snakeoil.key"), nil)
 	exit := make(chan struct{})
 	SignalC := make(chan os.Signal)
 

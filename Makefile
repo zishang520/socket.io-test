@@ -1,5 +1,5 @@
 .PHONY: default update install all engine.io socket.io init fmt
-export GOPATH:=$(shell pwd)/vendor
+# export GOPATH:=$(shell pwd)/vendor
 # Set the GOPROXY environment variable
 export GOPROXY=https://goproxy.io,direct
 # export http_proxy=socks5://127.0.0.1:1080

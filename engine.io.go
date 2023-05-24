@@ -42,7 +42,8 @@ func main() {
 
 	go http.ListenAndServe("127.0.0.1:6060", nil)
 
-	httpServer := types.CreateServer(nil).Listen("127.0.0.1:4444", nil)
+	dir, _ := os.Getwd()
+	httpServer := types.CreateServer(nil).ListenHttp2TLS("127.0.0.1:4444", path.Join(dir, "snakeoil.crt"), path.Join(dir, "snakeoil.key"), nil, nil)
 
 	// utils.SetTimeOut(func() {
 	// 	httpServer.Close(nil)
@@ -52,7 +53,6 @@ func main() {
 	// 	httpServer.Close(nil)
 	// }, 12000*time.Millisecond)
 
-	dir, _ := os.Getwd()
 	httpServer.HandleFunc("/public/", func(w http.ResponseWriter, r *http.Request) {
 		file, err := http.Dir(dir).Open(path.Clean("/" + r.URL.Path))
 		if err != nil {
