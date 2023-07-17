@@ -12,7 +12,7 @@ function $(id) {
 for (var i = 0; i < 1; i++) {
     // socket
     const socket = new eio.Socket({
-        forceBase64: true
+        // forceBase64: true
     });
     let last;
 

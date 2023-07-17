@@ -11,6 +11,7 @@ import (
 	"syscall"
 	// "time"
 
+	_types "github.com/zishang520/engine.io-go-parser/types"
 	"github.com/zishang520/engine.io/config"
 	"github.com/zishang520/engine.io/engine"
 	"github.com/zishang520/engine.io/log"
@@ -43,7 +44,7 @@ func main() {
 	go http.ListenAndServe("127.0.0.1:6060", nil)
 
 	dir, _ := os.Getwd()
-	httpServer := types.CreateServer(nil).ListenHttp2TLS("127.0.0.1:4444", path.Join(dir, "snakeoil.crt"), path.Join(dir, "snakeoil.key"), nil, nil)
+	httpServer := types.CreateServer(nil).ListenTLS("127.0.0.1:4444", path.Join(dir, "server.crt"), path.Join(dir, "server.key"), nil)
 
 	// utils.SetTimeOut(func() {
 	// 	httpServer.Close(nil)
@@ -66,7 +67,7 @@ func main() {
 	engineServer.On("connection", func(sockets ...interface{}) {
 		socket := sockets[0].(engine.Socket)
 		socket.On("message", func(args ...interface{}) {
-			socket.Send(types.NewBytesBufferString("66666666"), nil, nil)
+			socket.Send(_types.NewBytesBufferString("66666666"), nil, nil)
 			// utils.Log().Debug("%v", socket.Protocol())
 			// utils.Log().Debug("%v", socket.Id())
 			// utils.Log().Debug("%v", socket.Request().Headers())
