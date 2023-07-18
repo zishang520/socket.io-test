@@ -1,12 +1,14 @@
 module test
 
-go 1.18
+go 1.20
 
 replace github.com/zishang520/socket.io => ../socket.io/
 
 replace github.com/zishang520/engine.io => ../engine.io/
 
 require (
+	github.com/quic-go/quic-go v0.36.2
+	github.com/quic-go/webtransport-go v0.5.3
 	github.com/zishang520/engine.io v1.5.1
 	github.com/zishang520/engine.io-go-parser v1.1.1
 	github.com/zishang520/socket.io v0.0.0-00010101000000-000000000000
@@ -24,7 +26,6 @@ require (
 	github.com/quic-go/qpack v0.4.0 // indirect
 	github.com/quic-go/qtls-go1-19 v0.3.2 // indirect
 	github.com/quic-go/qtls-go1-20 v0.2.2 // indirect
-	github.com/quic-go/quic-go v0.36.2 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
 	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/exp v0.0.0-20221205204356-47842c84f3db // indirect

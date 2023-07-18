@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,6 +11,7 @@ import (
 	"os/signal"
 	"path"
 	"syscall"
+
 	// "time"
 
 	_types "github.com/zishang520/engine.io-go-parser/types"
@@ -44,7 +47,8 @@ func main() {
 	go http.ListenAndServe("127.0.0.1:6060", nil)
 
 	dir, _ := os.Getwd()
-	httpServer := types.CreateServer(nil).ListenTLS("127.0.0.1:4444", path.Join(dir, "server.crt"), path.Join(dir, "server.key"), nil)
+	httpServer := types.CreateServer(nil)
+	wt := httpServer.ListenHTTP3TLS(":443", path.Join(dir, "server.crt"), path.Join(dir, "server.key"), nil, nil)
 
 	// utils.SetTimeOut(func() {
 	// 	httpServer.Close(nil)
@@ -82,6 +86,61 @@ func main() {
 		})
 	})
 	utils.Log().Println("%v", engineServer)
+	// Create a new HTTP endpoint /webtransport.
+	httpServer.HandleFunc("/webtransport", func(w http.ResponseWriter, r *http.Request) {
+		utils.Log().Default("failed : %v %v", r.ProtoMajor, r.ProtoMinor)
+		session, err := wt.Upgrade(w, r)
+		if err != nil {
+			utils.Log().Default("upgrading failed: %s", err)
+			w.WriteHeader(500)
+			return
+		}
+
+		utils.Log().Default("failed : %v", session.ConnectionState())
+
+		// Wait for incoming bidi stream
+		stream, err := session.AcceptStream(context.Background())
+		if err != nil {
+			utils.Log().Default("failed to accept stream: %s", err)
+			return
+		}
+
+		go func() {
+			defer stream.Close()
+
+			buf := make([]byte, 1024) // 设置合适的缓冲区大小
+
+			for {
+				buf, err := _types.NewBytesBufferReader(stream)
+				if err != nil {
+					if err == io.EOF {
+						// 流已关闭
+						utils.Log().Default("stream read error: %s", err)
+						break
+					}
+					utils.Log().Default("stream read error: %s", err)
+					break
+				}
+				if err != nil {
+					utils.Log().Default("stream read error: %s", err)
+					break
+				}
+				utils.Log().Default("Received from bidi stream %v: %v", stream.StreamID(), buf)
+
+				// Modify the received message (e.g., convert to uppercase)
+				sendMsg := bytes.ToUpper(buf.Bytes())
+
+				// Send the modified message back to the stream
+				_, err = stream.Write(sendMsg)
+				if err != nil {
+					utils.Log().Default("stream write error: %s", err)
+					break
+				}
+				utils.Log().Default("Sending to bidi stream %v: %v", stream.StreamID(), sendMsg)
+			}
+		}()
+
+	})
 
 	exit := make(chan struct{})
 	SignalC := make(chan os.Signal)
