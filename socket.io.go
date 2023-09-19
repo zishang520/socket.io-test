@@ -6,15 +6,15 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
-	"path"
 	"regexp"
 	"syscall"
 	// "time"
 
+	_types "github.com/zishang520/engine.io-go-parser/types"
 	"github.com/zishang520/engine.io/log"
 	"github.com/zishang520/engine.io/types"
 	"github.com/zishang520/engine.io/utils"
-	"github.com/zishang520/socket.io/socket"
+	"github.com/zishang520/socket.io/v2/socket"
 )
 
 func main() {
@@ -48,18 +48,23 @@ func main() {
 		// utils.Log().Success("/ test Handshake：%v", client.Handshake())
 		client.Broadcast().Emit("hi test")
 		client.On("event", func(clients ...interface{}) {
+
 			// utils.Log().Success("/ test eventeventeventeventevent%v", clients)
 		})
 		client.On("disconnect", func(...interface{}) {
 			// utils.Log().Success("/ test disconnect")
 		})
 		client.On("chat message", func(msgs ...interface{}) {
+			io.FetchSockets()(func(sockets []*socket.RemoteSocket, err error) {
+				utils.Log().Success("sockets %v %v", sockets, err)
+			})
 			// io.Of("/test", nil).Emit("hi", msgs...)
 			client.Emit("chat message", map[string]interface{}{
-				"message": types.NewStringBufferString("xxx"),
+				"message": _types.NewStringBufferString("xxx"),
 			})
 		})
 	})
+
 	// io.On("connection", func(clients ...interface{}) {
 	// 	client := clients[0].(*socket.Socket)
 	// 	utils.Log().Success("Handshake：%v", client.Handshake())
@@ -80,7 +85,7 @@ func main() {
 	// 	})
 	// })
 
-	httpServer.ListenHttp2TLS("127.0.0.1:9999", path.Join(dir, "snakeoil.crt"), path.Join(dir, "snakeoil.key"), nil)
+	httpServer.Listen("127.0.0.1:9999", nil)
 	exit := make(chan struct{})
 	SignalC := make(chan os.Signal)
 
