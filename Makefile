@@ -4,6 +4,7 @@
 export GOPROXY=https://goproxy.io,direct
 # export http_proxy=socks5://127.0.0.1:1080
 # export https_proxy=%http_proxy%
+export DEBUG=*
 
 default: all
 

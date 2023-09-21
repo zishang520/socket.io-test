@@ -1,35 +1,43 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"os"
-	"path"
+	"fmt"
 
-	"github.com/quic-go/quic-go/http3"
-	"github.com/quic-go/webtransport-go"
+	"github.com/zishang520/engine.io/types"
+	"github.com/zishang520/engine.io/utils"
 )
 
-func main() {
-	dir, _ := os.Getwd()
-	// create a new webtransport.Server, listening on (UDP) port 443
-	s := webtransport.Server{
-		H3: http3.Server{Addr: ":443"},
-		CheckOrigin: func(r *http.Request) bool {
-			return true
-		},
-	}
+type X string
 
-	// Create a new HTTP endpoint /webtransport.
-	http.HandleFunc("/webtransport", func(w http.ResponseWriter, r *http.Request) {
-		conn, err := s.Upgrade(w, r)
-		if err != nil {
-			log.Printf("upgrading failed: %s", err)
-			w.WriteHeader(500)
-			return
+type A struct {
+	Uid string
+	AA  X
+}
+
+type B struct {
+	Uid string
+	AA  string
+}
+
+type Slice[F any, T any] []F
+
+func (s Slice[F, T]) Map(_call func(value F) T) []T {
+	r := make([]T, len(s))
+	for i, v := range s {
+		r[i] = _call(v)
+	}
+	return r
+}
+
+func (s Slice[F, T]) Range(_call func(value F, key int) bool) {
+	for k, v := range s {
+		if !_call(v, k) {
+			break
 		}
-		log.Printf("conn: %v", conn)
-		// Handle the connection. Here goes the application logic.
-	})
-	s.ListenAndServeTLS(path.Join(dir, "server.crt"), path.Join(dir, "server.key"))
+	}
+}
+
+func main() {
+	s := types.NewSet("1", "2").Keys()
+	fmt.Println(utils.MsgPack().Encode(s))
 }

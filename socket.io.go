@@ -8,6 +8,8 @@ import (
 	"os/signal"
 	"regexp"
 	"syscall"
+	"time"
+
 	// "time"
 
 	_types "github.com/zishang520/engine.io-go-parser/types"
@@ -54,10 +56,16 @@ func main() {
 		client.On("disconnect", func(...interface{}) {
 			// utils.Log().Success("/ test disconnect")
 		})
+		client.Timeout(1000*time.Millisecond).Emit("my-event", func(args []any, err error) {
+			utils.Log().Success("my-event %v %v", args, err)
+		})
+		client.Timeout(1000 * time.Millisecond).EmitWithAck("my-event1")(func(args []any, err error) {
+			utils.Log().Success("my-event1 %v %v", args, err)
+		})
 		client.On("chat message", func(msgs ...interface{}) {
-			io.FetchSockets()(func(sockets []*socket.RemoteSocket, err error) {
-				utils.Log().Success("sockets %v %v", sockets, err)
-			})
+			// io.FetchSockets()(func(sockets []*socket.RemoteSocket, err error) {
+			// 	utils.Log().Success("sockets %v %v", sockets, err)
+			// })
 			// io.Of("/test", nil).Emit("hi", msgs...)
 			client.Emit("chat message", map[string]interface{}{
 				"message": _types.NewStringBufferString("xxx"),

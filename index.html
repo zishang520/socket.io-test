@@ -64,7 +64,12 @@
             $('latency').innerHTML = latency + 'ms';
             setTimeout(send, 100);
         });
-
+        socket.on('my-event', (call) => {
+            console.log(call('{"niubi":"noiubi"}', 'xxx'));
+        });
+        socket.on('my-event1', (call) => {
+            console.log(call('{"niubi":"noiubi"}', 'xxx'));
+        });
         // var messages = document.getElementById('messages');
         // var form = document.getElementById('form');
         // var input = document.getElementById('input');
