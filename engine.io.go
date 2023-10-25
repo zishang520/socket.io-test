@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,6 +12,7 @@ import (
 
 	// "time"
 
+	"github.com/zishang520/engine.io-go-parser/packet"
 	_types "github.com/zishang520/engine.io-go-parser/types"
 	"github.com/zishang520/engine.io/config"
 	"github.com/zishang520/engine.io/engine"
@@ -48,8 +47,6 @@ func main() {
 
 	dir, _ := os.Getwd()
 	httpServer := types.CreateServer(nil)
-	wt := httpServer.ListenHTTP3TLS(":443", path.Join(dir, "server.crt"), path.Join(dir, "server.key"), nil, nil)
-
 	// utils.SetTimeOut(func() {
 	// 	httpServer.Close(nil)
 	// }, 10000*time.Millisecond)
@@ -71,7 +68,10 @@ func main() {
 	engineServer.On("connection", func(sockets ...interface{}) {
 		socket := sockets[0].(engine.Socket)
 		socket.On("message", func(args ...interface{}) {
-			socket.Send(_types.NewBytesBufferString("66666666"), nil, nil)
+			// socket.Send(_types.NewBytesBufferString("66666666"), nil, nil)
+			socket.Send(_types.NewStringBufferString("66666666666"), &packet.Options{
+				WsPreEncoded: _types.NewStringBufferString("4xxxx"),
+			}, nil)
 			// utils.Log().Debug("%v", socket.Protocol())
 			// utils.Log().Debug("%v", socket.Id())
 			// utils.Log().Debug("%v", socket.Request().Headers())
@@ -85,66 +85,15 @@ func main() {
 			utils.Log().Debug("close %v", e)
 		})
 	})
-	utils.Log().Println("%v", engineServer)
-	// Create a new HTTP endpoint /webtransport.
-	httpServer.HandleFunc("/webtransport", func(w http.ResponseWriter, r *http.Request) {
-		utils.Log().Default("failed : %v %v", r.ProtoMajor, r.ProtoMinor)
-		session, err := wt.Upgrade(w, r)
-		if err != nil {
-			utils.Log().Default("upgrading failed: %s", err)
-			w.WriteHeader(500)
-			return
-		}
-
-		utils.Log().Default("failed : %v", session.ConnectionState())
-
-		// Wait for incoming bidi stream
-		stream, err := session.AcceptStream(context.Background())
-		if err != nil {
-			utils.Log().Default("failed to accept stream: %s", err)
-			return
-		}
-
-		go func() {
-			defer stream.Close()
-
-			buf := make([]byte, 1024) // 设置合适的缓冲区大小
-
-			for {
-				buf, err := _types.NewBytesBufferReader(stream)
-				if err != nil {
-					if err == io.EOF {
-						// 流已关闭
-						utils.Log().Default("stream read error: %s", err)
-						break
-					}
-					utils.Log().Default("stream read error: %s", err)
-					break
-				}
-				if err != nil {
-					utils.Log().Default("stream read error: %s", err)
-					break
-				}
-				utils.Log().Default("Received from bidi stream %v: %v", stream.StreamID(), buf)
-
-				// Modify the received message (e.g., convert to uppercase)
-				sendMsg := bytes.ToUpper(buf.Bytes())
-
-				// Send the modified message back to the stream
-				_, err = stream.Write(sendMsg)
-				if err != nil {
-					utils.Log().Default("stream write error: %s", err)
-					break
-				}
-				utils.Log().Default("Sending to bidi stream %v: %v", stream.StreamID(), sendMsg)
-			}
-		}()
-
+	engineServer.On("connection_error", func(e ...any) {
+		utils.Log().Debug("connection_error %v", e[0].(*types.ErrorMessage).Context)
 	})
+	utils.Log().Println("%v", engineServer)
 
 	exit := make(chan struct{})
 	SignalC := make(chan os.Signal)
 
+	httpServer.Listen("127.0.0.1:9999", nil)
 	signal.Notify(SignalC, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	go func() {
 		for s := range SignalC {

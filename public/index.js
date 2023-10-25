@@ -11,29 +11,31 @@ function $(id) {
 // chart
 for (var i = 0; i < 1; i++) {
     // socket
-    const socket = new eio.Socket({
-        // forceBase64: true
+    const socket = new eio({
+        // forceBase64: true,
+        // transports: [],
     });
     let last;
 
     function send() {
         last = new Date();
-        socket.send('ping');
-        $('transport').innerHTML = socket.transport.name;
+        socket.send("ping");
+        $("transport").innerHTML = socket.transport.name;
     }
 
-    socket.on('open', () => {
+    socket.on("open", () => {
         send();
     });
 
-    socket.on('close', () => {
-        $('transport').innerHTML = '(disconnected)';
-        console.log("已经关闭连接")
+    socket.on("close", () => {
+        $("transport").innerHTML = "(disconnected)";
+        console.log("已经关闭连接");
     });
 
-    socket.on('message', () => {
+    socket.on("message", (m) => {
+        console.log(m)
         const latency = new Date() - last;
-        $('latency').innerHTML = latency + 'ms';
+        $("latency").innerHTML = latency + "ms";
         setTimeout(send, 100);
     });
 }
