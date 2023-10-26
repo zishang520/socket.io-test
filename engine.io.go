@@ -12,7 +12,7 @@ import (
 
 	// "time"
 
-	"github.com/zishang520/engine.io-go-parser/packet"
+	"github.com/gorilla/websocket"
 	_types "github.com/zishang520/engine.io-go-parser/types"
 	"github.com/zishang520/engine.io/config"
 	"github.com/zishang520/engine.io/engine"
@@ -35,6 +35,8 @@ func main() {
 		Origin:      "*",
 		Credentials: true,
 	})
+	serverOptions.SetTransports(types.NewSet("polling", "websocket", "webtransport"))
+
 	xxx := types.NewSet("1", "2", "3", "5")
 	utils.Log().Debug("%v", xxx)
 	cache := xxx.All()
@@ -63,15 +65,28 @@ func main() {
 		}
 		io.Copy(w, file)
 	})
-	engineServer := engine.New(httpServer, serverOptions)
+	httpServer.ListenTLS(":443", "server.crt", "server.key", nil)
+	wts := httpServer.ListenWebTransportTLS(":443", "server.crt", "server.key", nil, nil)
+
+	engineServer := engine.New(serverOptions)
+
+	httpServer.HandleFunc("/engine.io/", func(w http.ResponseWriter, r *http.Request) {
+		if !websocket.IsWebSocketUpgrade(r) {
+			engineServer.OnWebTransportSession(types.NewHttpContext(w, r), wts)
+			// engineServer.HandleRequest(types.NewHttpContext(w, r))
+		} else if engineServer.Opts().Transports().Has("websocket") {
+			engineServer.HandleUpgrade(types.NewHttpContext(w, r))
+		} else {
+			// httpServer.DefaultHandler.ServeHTTP(w, r)
+			engineServer.OnWebTransportSession(types.NewHttpContext(w, r), wts)
+		}
+	})
 
 	engineServer.On("connection", func(sockets ...interface{}) {
 		socket := sockets[0].(engine.Socket)
 		socket.On("message", func(args ...interface{}) {
 			// socket.Send(_types.NewBytesBufferString("66666666"), nil, nil)
-			socket.Send(_types.NewStringBufferString("66666666666"), &packet.Options{
-				WsPreEncoded: _types.NewStringBufferString("4xxxx"),
-			}, nil)
+			socket.Send(_types.NewStringBufferString("66666666666"), nil, nil)
 			// utils.Log().Debug("%v", socket.Protocol())
 			// utils.Log().Debug("%v", socket.Id())
 			// utils.Log().Debug("%v", socket.Request().Headers())
@@ -93,7 +108,6 @@ func main() {
 	exit := make(chan struct{})
 	SignalC := make(chan os.Signal)
 
-	httpServer.ListenHTTP3TLS("127.0.0.1:443", "server.crt", "server.key", nil, nil)
 	signal.Notify(SignalC, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	go func() {
 		for s := range SignalC {

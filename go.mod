@@ -6,8 +6,6 @@ replace github.com/zishang520/socket.io/v2 => ../socket.io/
 
 replace github.com/zishang520/engine.io => ../engine.io/
 
-replace github.com/quic-go/quic-go => ../quic-go/
-
 require (
 	github.com/zishang520/engine.io v1.5.9
 	github.com/zishang520/engine.io-go-parser v1.2.3
