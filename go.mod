@@ -6,6 +6,8 @@ replace github.com/zishang520/socket.io/v2 => ../socket.io/
 
 replace github.com/zishang520/engine.io => ../engine.io/
 
+replace github.com/quic-go/quic-go => ../quic-go/
+
 require (
 	github.com/zishang520/engine.io v1.5.9
 	github.com/zishang520/engine.io-go-parser v1.2.3
@@ -21,7 +23,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/onsi/ginkgo/v2 v2.12.0 // indirect
 	github.com/quic-go/qpack v0.4.0 // indirect
-	github.com/quic-go/qtls-go1-20 v0.3.4 // indirect
+	github.com/quic-go/qtls-go1-20 v0.4.1 // indirect
 	github.com/quic-go/quic-go v0.39.2 // indirect
 	github.com/quic-go/webtransport-go v0.6.0 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.0 // indirect

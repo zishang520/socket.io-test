@@ -46,7 +46,7 @@ func main() {
 	go http.ListenAndServe("127.0.0.1:6060", nil)
 
 	dir, _ := os.Getwd()
-	httpServer := types.CreateServer(nil)
+	httpServer := types.NewWebServer(nil)
 	// utils.SetTimeOut(func() {
 	// 	httpServer.Close(nil)
 	// }, 10000*time.Millisecond)
@@ -93,7 +93,7 @@ func main() {
 	exit := make(chan struct{})
 	SignalC := make(chan os.Signal)
 
-	httpServer.Listen("127.0.0.1:9999", nil)
+	httpServer.ListenHTTP3TLS("127.0.0.1:443", "server.crt", "server.key", nil, nil)
 	signal.Notify(SignalC, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	go func() {
 		for s := range SignalC {

@@ -13,7 +13,7 @@ for (var i = 0; i < 1; i++) {
     // socket
     const socket = new eio({
         // forceBase64: true,
-        // transports: [],
+        // transports: ['polling'],
     });
     let last;
 
