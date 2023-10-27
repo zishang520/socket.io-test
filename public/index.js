@@ -13,7 +13,7 @@ for (var i = 0; i < 1; i++) {
     // socket
     const socket = new eio({
         // forceBase64: true,
-        transports: ['webtransport'],
+        transports: ["polling", "websocket", ],
     });
     let last;
 
@@ -33,8 +33,7 @@ for (var i = 0; i < 1; i++) {
     });
 
     socket.on("message", (m) => {
-        console.log(m)
-        console.log(new Uint8Array(m))
+        console.log(m);
         const latency = new Date() - last;
         $("latency").innerHTML = latency + "ms";
         setTimeout(send, 100);

@@ -13,12 +13,14 @@ import (
 	// "time"
 
 	"github.com/gorilla/websocket"
+	"github.com/zishang520/engine.io-go-parser/packet"
 	_types "github.com/zishang520/engine.io-go-parser/types"
 	"github.com/zishang520/engine.io/config"
 	"github.com/zishang520/engine.io/engine"
 	"github.com/zishang520/engine.io/log"
 	"github.com/zishang520/engine.io/types"
 	"github.com/zishang520/engine.io/utils"
+	"github.com/zishang520/engine.io/webtransport"
 )
 
 type Test struct{ B int }
@@ -71,9 +73,10 @@ func main() {
 	engineServer := engine.New(serverOptions)
 
 	httpServer.HandleFunc("/engine.io/", func(w http.ResponseWriter, r *http.Request) {
-		if !websocket.IsWebSocketUpgrade(r) {
+		if webtransport.IsWebTransportUpgrade(r) {
 			engineServer.OnWebTransportSession(types.NewHttpContext(w, r), wts)
-			// engineServer.HandleRequest(types.NewHttpContext(w, r))
+		} else if !websocket.IsWebSocketUpgrade(r) {
+			engineServer.HandleRequest(types.NewHttpContext(w, r))
 		} else if engineServer.Opts().Transports().Has("websocket") {
 			engineServer.HandleUpgrade(types.NewHttpContext(w, r))
 		} else {
@@ -86,7 +89,9 @@ func main() {
 		socket := sockets[0].(engine.Socket)
 		socket.On("message", func(args ...interface{}) {
 			// socket.Send(_types.NewBytesBufferString("66666666"), nil, nil)
-			socket.Send(_types.NewStringBufferString("66666666666"), nil, nil)
+			socket.Send(_types.NewStringBufferString("66666666666"), &packet.Options{
+				WsPreEncoded: _types.NewStringBufferString("466666666666"),
+			}, nil)
 			// utils.Log().Debug("%v", socket.Protocol())
 			// utils.Log().Debug("%v", socket.Id())
 			// utils.Log().Debug("%v", socket.Request().Headers())
@@ -119,6 +124,9 @@ func main() {
 	}()
 
 	<-exit
-	httpServer.Close(nil)
+	engineServer.Close()
+	utils.Log().Debug("err:%v", httpServer.Close(func() {
+		utils.Log().Debug("server close")
+	}))
 	os.Exit(0)
 }
