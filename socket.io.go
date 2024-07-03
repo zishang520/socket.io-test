@@ -3,34 +3,30 @@ package main
 import (
 	"io"
 	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"os/signal"
-	"regexp"
 	"syscall"
 	"time"
 
-	// "time"
-
-	_types "github.com/zishang520/engine.io-go-parser/types"
-	"github.com/zishang520/engine.io/log"
-	"github.com/zishang520/engine.io/types"
-	"github.com/zishang520/engine.io/utils"
+	"github.com/zishang520/engine.io/v2/log"
+	"github.com/zishang520/engine.io/v2/types"
 	"github.com/zishang520/socket.io/v2/socket"
 )
 
 func main() {
 	log.DEBUG = true
-	go func() {
-		utils.Log().Success("%v", http.ListenAndServe("localhost:6060", nil))
-	}()
 	c := socket.DefaultServerOptions()
 	c.SetAllowEIO3(true)
+	// c.SetConnectionStateRecovery(&socket.ConnectionStateRecovery{})
+	// c.SetAllowEIO3(true)
+	c.SetPingInterval(300 * time.Millisecond)
+	c.SetPingTimeout(200 * time.Millisecond)
+	c.SetMaxHttpBufferSize(1000000)
+	c.SetConnectTimeout(1000 * time.Millisecond)
 	c.SetCors(&types.Cors{
-		Origin:      "http://127.0.0.1:8000",
+		Origin:      "*",
 		Credentials: true,
 	})
-	utils.Log().Success("AllowEIO3：%v", c.AllowEIO3())
 	httpServer := types.CreateServer(nil)
 	dir, _ := os.Getwd()
 	httpServer.HandleFunc("/index.html", func(w http.ResponseWriter, r *http.Request) {
@@ -42,58 +38,27 @@ func main() {
 		io.Copy(w, file)
 	})
 	io := socket.NewServer(httpServer, c)
-	io.Of(
-		regexp.MustCompile(`/\w+`),
-		nil,
-	).On("connection", func(clients ...interface{}) {
+	io.On("connection", func(clients ...interface{}) {
 		client := clients[0].(*socket.Socket)
-		// utils.Log().Success("/ test Handshake：%v", client.Handshake())
-		client.Broadcast().Emit("hi test")
-		client.On("event", func(clients ...interface{}) {
+		client.Emit("auth", client.Handshake().Auth)
 
-			// utils.Log().Success("/ test eventeventeventeventevent%v", clients)
+		client.On("message", func(args ...interface{}) {
+			client.Emit("message-back", args...)
 		})
-		client.On("disconnect", func(...interface{}) {
-			// utils.Log().Success("/ test disconnect")
-		})
-		client.Timeout(1000*time.Millisecond).Emit("my-event", func(args []any, err error) {
-			utils.Log().Success("my-event %v %v", args, err)
-		})
-		client.Timeout(1000 * time.Millisecond).EmitWithAck("my-event1")(func(args []any, err error) {
-			utils.Log().Success("my-event1 %v %v", args, err)
-		})
-		client.On("chat message", func(msgs ...interface{}) {
-			// io.FetchSockets()(func(sockets []*socket.RemoteSocket, err error) {
-			// 	utils.Log().Success("sockets %v %v", sockets, err)
-			// })
-			// io.Of("/test", nil).Emit("hi", msgs...)
-			client.Emit("chat message", map[string]interface{}{
-				"message": _types.NewStringBufferString("xxx"),
-			})
+
+		client.On("message-with-ack", func(args ...interface{}) {
+			ack := args[len(args)-1].(func([]any, error))
+			ack(args[:len(args)-1], nil)
 		})
 	})
 
-	// io.On("connection", func(clients ...interface{}) {
-	// 	client := clients[0].(*socket.Socket)
-	// 	utils.Log().Success("Handshake：%v", client.Handshake())
-	// 	client.Broadcast().Emit("hi")
-	// 	client.On("event", func(clients ...interface{}) {
-	// 		utils.Log().Success("eventeventeventeventevent%v", clients)
-	// 	})
-	// 	client.On("disconnect", func(...interface{}) {
-	// 		utils.Log().Success("disconnect")
-	// 	})
-	// 	client.On("chat message", func(msgs ...interface{}) {
-	// 		io.Of("/test", nil).Emit("hi", msgs...)
-	// 		client.Emit("chat message", msgs...)
-	// 		utils.Log().Success("message：%v", msgs[0])
-	// 		utils.Log().Success("FetchSockets %v", io.Adapter().FetchSockets(&socket.BroadcastOptions{
-	// 			Rooms: types.NewSet[socket.Room]("/"),
-	// 		}))
-	// 	})
-	// })
+	io.Of("/custom", nil).On("connection", func(clients ...interface{}) {
+		client := clients[0].(*socket.Socket)
+		client.Emit("auth", client.Handshake().Auth)
+	})
 
-	httpServer.Listen("127.0.0.1:9999", nil)
+	httpServer.Listen(":3000", nil)
+
 	exit := make(chan struct{})
 	SignalC := make(chan os.Signal)
 
@@ -111,9 +76,4 @@ func main() {
 	<-exit
 	io.Close(nil)
 	os.Exit(0)
-	// ad := socket.NewAdapter(nil)
-	// ad.AddAll("1", types.NewSet("1", "2"))
-	// a := socket.NewBroadcastOperator(nil, nil, nil, nil)
-	// utils.Log().Info("%v", a.Compress(true))
-	// utils.Log().Info("%v", a)
 }
