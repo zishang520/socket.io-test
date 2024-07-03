@@ -15,12 +15,12 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/zishang520/engine.io-go-parser/packet"
 	_types "github.com/zishang520/engine.io-go-parser/types"
-	"github.com/zishang520/engine.io/config"
-	"github.com/zishang520/engine.io/engine"
-	"github.com/zishang520/engine.io/log"
-	"github.com/zishang520/engine.io/types"
-	"github.com/zishang520/engine.io/utils"
-	"github.com/zishang520/engine.io/webtransport"
+	"github.com/zishang520/engine.io/v2/config"
+	"github.com/zishang520/engine.io/v2/engine"
+	"github.com/zishang520/engine.io/v2/log"
+	"github.com/zishang520/engine.io/v2/types"
+	"github.com/zishang520/engine.io/v2/utils"
+	"github.com/zishang520/engine.io/v2/webtransport"
 )
 
 type Test struct{ B int }
@@ -125,8 +125,8 @@ func main() {
 
 	<-exit
 	engineServer.Close()
-	utils.Log().Debug("err:%v", httpServer.Close(func() {
-		utils.Log().Debug("server close")
+	utils.Log().Debug("err:%v", httpServer.Close(func(err error) {
+		utils.Log().Debug("server close %v", err)
 	}))
 	os.Exit(0)
 }

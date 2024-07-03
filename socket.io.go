@@ -19,8 +19,8 @@ func main() {
 	c.SetAllowEIO3(true)
 	// c.SetConnectionStateRecovery(&socket.ConnectionStateRecovery{})
 	// c.SetAllowEIO3(true)
-	c.SetPingInterval(300 * time.Millisecond)
-	c.SetPingTimeout(200 * time.Millisecond)
+	// c.SetPingInterval(300 * time.Millisecond)
+	// c.SetPingTimeout(200 * time.Millisecond)
 	c.SetMaxHttpBufferSize(1000000)
 	c.SetConnectTimeout(1000 * time.Millisecond)
 	c.SetCors(&types.Cors{
