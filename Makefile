@@ -1,4 +1,4 @@
-.PHONY: default update install all engine.io socket.io init fmt ssl
+.PHONY: ssl
 # Set the GOPROXY environment variable
 export GOPROXY=https://goproxy.io,direct
 export DEBUG=*
@@ -7,30 +7,6 @@ DOMAIN=localhost
 IP=127.0.0.1
 CN=Luoyy
 BUILDTAGS=release
-default: all
-
-install:
-	go mod tidy -v
-	go mod vendor -v
-
-update:
-	go mod tidy -v
-
-fmt:
-	go fmt ...
-
-engine.io:
-	go build --mod=mod  -ldflags '-s -w -extldflags "-static"' -o "bin/engine" engine.io.go
-	bash -c "bin/engine"
-
-socket.io:
-	go build --mod=mod  -ldflags '-s -w -extldflags "-static"' -o "bin/socket" socket.io.go
-	bash -c "bin/socket"
-
-init:
-
-
-all:
 
 ssl:
 	@echo 'authorityKeyIdentifier=keyid,issuer' > .v3.ext

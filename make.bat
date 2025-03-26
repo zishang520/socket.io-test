@@ -5,46 +5,37 @@ pushd "%~dp0"
 setlocal ENABLEDELAYEDEXPANSION
 rem Set the GOPROXY environment variable
 Set GOPROXY=https://goproxy.io,direct
-Set DEBUG=*
 
-if /i "%args%"=="update" goto %args%
-if /i "%args%"=="install" goto %args%
-if /i "%args%"=="all" goto %args%
-if /i "%args%"=="engine.io" goto %args%
-if /i "%args%"=="socket.io" goto %args%
-if /i "%args%"=="init" goto %args%
+if /i "%args%"=="default" goto %args%
+if /i "%args%"=="deps" goto %args%
+if /i "%args%"=="fmt" goto %args%
+if /i "%args%"=="clean" goto %args%
+if /i "%args%"=="test" goto %args%
+if /i "%args%"=="run" goto %args%
 
-goto DEFAULT_CASE
-:update
+goto default
+
+:default
+    GOTO :EOF
+
+:deps
     CALL go mod tidy
     CALL go mod vendor
-    GOTO END_CASE
-:install
-    CALL go mod vendor -v
-    GOTO END_CASE
-:all
-    echo ========================
-    echo build
-    set CGO_ENABLED=0
-    CALL go build --mod=mod -race -ldflags "-s -w -extldflags \"-static\"" -o bin\main.exe main.go
+    GOTO :EOF
 
-    GOTO END_CASE
-:engine.io
-    set CGO_ENABLED=1
-    CALL go build --mod=mod -race -o bin\engine.exe engine.io.go
-    CALL bin\engine.exe
-    GOTO END_CASE
-:socket.io
-    set CGO_ENABLED=1
-    CALL go build --mod=mod -race -o bin\socket.exe socket.io.go
-    CALL bin\socket.exe
-    GOTO END_CASE
-:init
-    GOTO END_CASE
-:DEFAULT_CASE
-    set CGO_ENABLED=1
-    CALL go build --mod=mod -race -o bin\main.exe main.go
-    CALL bin\main.exe
-    GOTO END_CASE
-:END_CASE
+:fmt
+    CALL go fmt -mod=mod ./...
+    GOTO :EOF
+
+:clean
+    CALL go clean -mod=mod -v -r ./...
+    GOTO :EOF
+
+:test
+    CALL go clean -testcache
+    CALL go test -race -cover -covermode=atomic -mod=mod ./...
+    GOTO :EOF
+
+:run
+    CALL go run -mod=mod main.go
     GOTO :EOF

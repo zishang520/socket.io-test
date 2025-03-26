@@ -35,7 +35,7 @@
         const manager = new io.Manager("ws://127.0.0.1:3000", {
         });
 
-        const socket = manager.socket("/test", {
+        const socket = manager.socket("/custom", {
             reconnectionDelayMax: 10000,
             auth: { token: "123" },
             query: {
