@@ -2,7 +2,10 @@ module app
 
 go 1.24.1
 
+replace github.com/zishang520/engine.io-client-go => ../engine.io-client-go
+
 require (
+	github.com/zishang520/engine.io-client-go v0.0.0-20220919143153-caf26cef37f7
 	github.com/zishang520/engine.io/v2 v2.4.4
 	github.com/zishang520/socket.io/v2 v2.4.2
 )
@@ -13,6 +16,7 @@ require (
 	github.com/google/pprof v0.0.0-20230821062121-407c9e7a662f // indirect
 	github.com/gookit/color v1.5.4 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
+	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/onsi/ginkgo/v2 v2.12.0 // indirect
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/quic-go/quic-go v0.50.0 // indirect
@@ -31,4 +35,5 @@ require (
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
 	golang.org/x/tools v0.22.0 // indirect
+	resty.dev/v3 v3.0.0-beta.2 // indirect
 )
