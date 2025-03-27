@@ -1,10 +1,11 @@
 @echo OFF
 
-set "args=%*"
+set "args=%1"
 pushd "%~dp0"
 setlocal ENABLEDELAYEDEXPANSION
 rem Set the GOPROXY environment variable
 Set GOPROXY=https://goproxy.io,direct
+Set DEBUG=*
 
 if /i "%args%"=="default" goto %args%
 if /i "%args%"=="deps" goto %args%
@@ -20,7 +21,8 @@ goto default
 
 :deps
     CALL go mod tidy
-    CALL go mod vendor
+    CALL go work sync
+    CALL go work vendor
     GOTO :EOF
 
 :fmt
@@ -37,5 +39,11 @@ goto default
     GOTO :EOF
 
 :run
-    CALL go run -mod=mod main.go
-    GOTO :EOF
+    cls
+    set "param=%2"
+    if "%param%"=="" (
+        set "param=./..."
+    )
+    echo run %param%
+    call go run -race -gcflags "all=-N -l" %param%
+    goto :EOF

@@ -1,12 +1,35 @@
-.PHONY: ssl
+.PHONY: default deps fmt clean test ssl
 # Set the GOPROXY environment variable
 export GOPROXY=https://goproxy.io,direct
 export DEBUG=*
+
+ARGS := $(filter-out $@,$(MAKECMDGOALS))
 
 DOMAIN=localhost
 IP=127.0.0.1
 CN=Luoyy
 BUILDTAGS=release
+
+default:
+
+deps:
+	@go mod tidy
+	@go work sync
+	@go work vendor
+
+fmt:
+	@go fmt -mod=mod ./...
+
+clean:
+	@go clean -mod=mod -v -r ./...
+
+test:
+	go clean -testcache
+	go test -race -cover -covermode=atomic -mod=mod -v ./...
+
+run:
+	@param=$(if $(word 2,$(ARGS)),$(word 2,$(ARGS)),./...); \
+    go run -race -gcflags "all=-N -l" "$$param"
 
 ssl:
 	@echo 'authorityKeyIdentifier=keyid,issuer' > .v3.ext
