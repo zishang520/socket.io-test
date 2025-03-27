@@ -1,8 +1,7 @@
-package socket
+package servers
 
 import (
 	"net/http"
-	"regexp"
 
 	"github.com/zishang520/engine.io/v2/engine"
 	"github.com/zishang520/engine.io/v2/types"
@@ -10,7 +9,7 @@ import (
 	"github.com/zishang520/socket.io/v2/socket"
 )
 
-func SocketServer(addr string, certFile string, keyFile string) *socket.Server {
+func Socket(addr string, certFile string, keyFile string) *socket.Server {
 	c := socket.DefaultServerOptions()
 	c.SetServeClient(true)
 	c.SetCors(&types.Cors{
@@ -18,6 +17,8 @@ func SocketServer(addr string, certFile string, keyFile string) *socket.Server {
 		Credentials: true,
 	})
 	httpServer := types.NewWebServer(nil)
+	httpServer.ListenTLS(addr, certFile, keyFile, nil)
+
 	socketio := socket.NewServer(httpServer, nil)
 
 	// WebTransport start
@@ -36,33 +37,6 @@ func SocketServer(addr string, certFile string, keyFile string) *socket.Server {
 		}
 	})
 	// WebTransport end
-
-	socketio.On("connection", func(clients ...interface{}) {
-		client := clients[0].(*socket.Socket)
-
-		client.On("message", func(args ...interface{}) {
-			client.Emit("message-back", args...)
-		})
-		client.Emit("auth", client.Handshake().Auth)
-
-		client.On("message-with-ack", func(args ...interface{}) {
-			ack := args[len(args)-1].(socket.Ack)
-			ack(args[:len(args)-1], nil)
-		})
-		client.OnAny(func(args ...any) {
-			client.Emit(args[0].(string), args[1:]...)
-		})
-	})
-
-	socketio.Of(regexp.MustCompile(`/\w+`), nil).On("connection", func(clients ...interface{}) {
-		client := clients[0].(*socket.Socket)
-		client.Emit("auth", client.Handshake().Auth)
-		client.OnAny(func(args ...any) {
-			client.Emit(args[0].(string), args[1:]...)
-		})
-	})
-
-	httpServer.ListenTLS(":3000", "server.crt", "server.key", nil)
 
 	return socketio
 }
