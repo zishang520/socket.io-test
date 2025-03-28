@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	_ "app/clients/internal"
 	"app/clients/internal/clients"
@@ -41,8 +42,10 @@ func main() {
 
 	e := clients.Engine("https://127.0.0.1:8000", opts)
 	e.On("open", func(args ...any) {
+		utils.SetTimeout(func() {
+			e.Send(types.NewStringBufferString("88888"), nil, nil)
+		}, 1*time.Second)
 		utils.Log().Debug("close %v", args)
-		e.Send(types.NewStringBufferString("ping"), nil, nil)
 	})
 
 	e.On("close", func(args ...any) {
@@ -50,19 +53,24 @@ func main() {
 	})
 
 	e.On("packet", func(args ...any) {
-		utils.Log().Info("packet: %+v", args)
+		utils.Log().Warning("packet: %+v", args)
 	})
 
 	e.On("ping", func(...any) {
-		utils.Log().Info("ping")
+		utils.Log().Warning("ping")
 	})
 
 	e.On("pong", func(...any) {
-		utils.Log().Info("pong")
+		utils.Log().Warning("pong")
 	})
 
 	e.On("message", func(args ...any) {
-		utils.Log().Info("close %v", args)
+		e.Send(types.NewStringBufferString("6666666"), nil, nil)
+		utils.Log().Warning("message %v", args)
+	})
+
+	e.On("heartbeat", func(...any) {
+		utils.Log().Debug("heartbeat")
 	})
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)

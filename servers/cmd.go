@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"io"
 	"os"
 	"os/signal"
 	"regexp"
@@ -24,8 +23,20 @@ func main() {
 
 	e.On("connection", func(sockets ...interface{}) {
 		socket := sockets[0].(engine.Socket)
-		socket.On("message", func(args ...interface{}) {
-			socket.Send(args[0].(io.Reader), nil, nil)
+		socket.On("packet", func(args ...any) {
+			utils.Log().Warning("packet: %+v", args)
+		})
+
+		socket.On("ping", func(...any) {
+			utils.Log().Warning("ping")
+		})
+
+		socket.On("pong", func(...any) {
+			utils.Log().Warning("pong")
+		})
+		socket.On("message", func(args ...any) {
+			socket.Send(types.NewStringBufferString("999999999"), nil, nil)
+			utils.Log().Warning("message %v", args)
 		})
 		socket.On("heartbeat", func(...any) {
 			utils.Log().Debug("heartbeat %v", socket.Request().Query())
