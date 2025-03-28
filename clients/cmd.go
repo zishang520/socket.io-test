@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	_ "app/clients/internal"
 	"app/clients/internal/clients"
 
 	"github.com/zishang520/engine.io-client-go/engine"
@@ -32,9 +33,9 @@ func main() {
 	}
 
 	opts := engine.DefaultSocketOptions()
-	// opts.SetSecure(true)
 	opts.SetTLSClientConfig(&tls.Config{
-		RootCAs: rootCAs,
+		RootCAs:   rootCAs,
+		ClientCAs: rootCAs,
 	})
 	opts.SetTransports(types.NewSet(transports.Polling /*, transports.WebSocket, transports.WebTransport*/))
 
@@ -48,8 +49,20 @@ func main() {
 		utils.Log().Debug("close %v", args)
 	})
 
+	e.On("packet", func(args ...any) {
+		utils.Log().Info("packet: %+v", args)
+	})
+
+	e.On("ping", func(...any) {
+		utils.Log().Info("ping")
+	})
+
+	e.On("pong", func(...any) {
+		utils.Log().Info("pong")
+	})
+
 	e.On("message", func(args ...any) {
-		utils.Log().Debug("close %v", args)
+		utils.Log().Info("close %v", args)
 	})
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
