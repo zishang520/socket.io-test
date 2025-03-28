@@ -4,100 +4,116 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"regexp"
+	"strconv"
 	"sync"
+	"time"
 
 	"github.com/quic-go/quic-go/http3"
-	"github.com/zishang520/engine.io-go-parser/types"
-	"github.com/zishang520/engine.io/v2/utils"
 )
 
-// 自定义 Transport，支持多协议
-type MultiTransport struct {
-	h3Transport  *http3.Transport  // HTTP/3 的 Transport
-	stdTransport *http.Transport   // HTTP/2/1.1 的 Transport
-	altSvcCache  map[string]string // 缓存服务端支持的协议（例如 Alt-Svc）
-	cacheMutex   sync.RWMutex      // 缓存读写锁
+type AltSvcInfo struct {
+	Protocol string
+	Port     string
+	Expiry   time.Time
 }
 
-// 初始化 MultiTransport
-func NewMultiTransport() *MultiTransport {
+type MultiTransport struct {
+	h3Transport  *http3.Transport
+	stdTransport *http.Transport
+	altSvcCache  sync.Map
+	re           *regexp.Regexp
+}
 
+func NewMultiTransport() *MultiTransport {
 	certPEM, err := os.ReadFile("root.crt")
 	if err != nil {
-		utils.Log().Fatalf("读取证书失败: %v", err)
+		panic(fmt.Sprintf("读取证书失败: %v", err))
 	}
 
 	rootCAs := x509.NewCertPool()
-	ok := rootCAs.AppendCertsFromPEM(certPEM)
-	if !ok {
-		utils.Log().Fatal("添加自签名证书失败")
+	if !rootCAs.AppendCertsFromPEM(certPEM) {
+		panic("添加自签名证书失败")
 	}
+
+	tlsConfig := &tls.Config{RootCAs: rootCAs}
+
 	return &MultiTransport{
-		h3Transport: &http3.Transport{
-			TLSClientConfig: &tls.Config{
-				RootCAs:   rootCAs,
-				ClientCAs: rootCAs,
-				// NextProtos: []string{"h3"}, // QUIC 必须的 ALPN 标识
-			},
-		},
-		stdTransport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				RootCAs:   rootCAs,
-				ClientCAs: rootCAs,
-				// NextProtos: []string{"h2", "http/1.1"}, // 支持 HTTP/2 和 HTTP/1.1
-			},
-		},
-		altSvcCache: make(map[string]string),
+		h3Transport:  &http3.Transport{TLSClientConfig: tlsConfig},
+		stdTransport: &http.Transport{TLSClientConfig: tlsConfig},
+		re:           regexp.MustCompile(`(\w+)="([^"]+)"(?:;\s*ma=(\d+))?`),
 	}
 }
 
-// 实现 RoundTrip 接口
+func (t *MultiTransport) parseAltSvcHeader(header string) []AltSvcInfo {
+	var altSvcList []AltSvcInfo
+	for _, match := range t.re.FindAllStringSubmatch(header, -1) {
+		maxAge := 86400
+		if match[3] != "" {
+			if ma, err := strconv.Atoi(match[3]); err == nil {
+				maxAge = ma
+			}
+		}
+		altSvcList = append(altSvcList, AltSvcInfo{
+			Protocol: match[1],
+			Port:     match[2],
+			Expiry:   time.Now().Add(time.Duration(maxAge) * time.Second),
+		})
+	}
+	return altSvcList
+}
+
 func (t *MultiTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	// 1. 检查是否有缓存的 Alt-Svc 信息（是否已知服务端支持 HTTP/3）
-	t.cacheMutex.RLock()
-	altSvc, ok := t.altSvcCache[req.URL.Host]
-	t.cacheMutex.RUnlock()
-
-	if ok && altSvc == "h3" {
-		// 2. 如果已知支持 HTTP/3，直接使用 QUIC
-		return t.h3Transport.RoundTrip(req)
+	if altSvc, ok := t.altSvcCache.Load(req.URL.Host); ok {
+		if as := altSvc.(AltSvcInfo); as.Protocol == "h3" && time.Now().Before(as.Expiry) {
+			req.URL.Scheme = "https"
+			req.URL.Host = req.URL.Hostname() + ":" + as.Port
+			if resp, err := t.h3Transport.RoundTrip(req); err == nil {
+				return resp, nil
+			}
+		}
 	}
 
-	// 3. 尝试 HTTP/3
-	resp, err := t.h3Transport.RoundTrip(req)
-	if err == nil {
-		// 4. 如果成功，缓存 Alt-Svc 信息
-		t.cacheMutex.Lock()
-		t.altSvcCache[req.URL.Host] = "h3"
-		t.cacheMutex.Unlock()
-		fmt.Println("Http3")
-		return resp, nil
+	resp, err := t.stdTransport.RoundTrip(req)
+	if err != nil {
+		return nil, err
 	}
-	fmt.Println("Http2")
 
-	// 5. 如果 HTTP/3 失败，回退到 HTTP/2 或 HTTP/1.1
-	return t.stdTransport.RoundTrip(req)
+	if altSvcHeader := resp.Header.Get("Alt-Svc"); altSvcHeader != "" {
+		for _, svc := range t.parseAltSvcHeader(altSvcHeader) {
+			if svc.Protocol == "h3" {
+				fmt.Printf("检测到 Alt-Svc: h3=%s, 有效期: %s\n", svc.Port, svc.Expiry)
+				t.altSvcCache.Store(req.URL.Host, svc)
+				break
+			}
+		}
+	}
+
+	return resp, nil
 }
 
-// 关闭 Transport 资源
 func (t *MultiTransport) Close() error {
-	_ = t.h3Transport.Close()             // 关闭 HTTP/3 连接
-	t.stdTransport.CloseIdleConnections() // 关闭 HTTP/2/1.1 连接
+	t.h3Transport.Close()
+	t.stdTransport.CloseIdleConnections()
 	return nil
 }
 
-// 使用示例
 func main() {
 	client := &http.Client{
 		Transport: NewMultiTransport(),
+		Timeout:   10 * time.Second,
 	}
+
 	resp, err := client.Get("https://127.0.0.1:8000")
 	if err != nil {
-		panic(err)
+		fmt.Println("请求失败:", err)
+		return
 	}
 	defer resp.Body.Close()
-	data, _ := types.NewBytesBufferReader(resp.Body)
-	fmt.Println(data.String())
+
+	body, _ := io.ReadAll(resp.Body)
+	fmt.Println("响应:", string(body))
 }
