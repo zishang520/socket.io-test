@@ -29,12 +29,12 @@ func Engine(addr string, certFile string, keyFile string) engine.Server {
 
 	engineServer := engine.New(httpServer, serverOptions)
 
-	wts := httpServer.ListenWebTransportTLS(addr, certFile, keyFile, nil, nil)
+	// wts := httpServer.ListenWebTransportTLS(addr, certFile, keyFile, nil, nil)
 	httpServer.HandleFunc("/engine.io/", func(w http.ResponseWriter, r *http.Request) {
 		// Upgrade http3
-		wts.H3.SetQUICHeaders(w.Header())
+		// wts.H3.SetQUICHeaders(w.Header())
 		if webtransport.IsWebTransportUpgrade(r) {
-			engineServer.OnWebTransportSession(types.NewHttpContext(w, r), wts)
+			// engineServer.OnWebTransportSession(types.NewHttpContext(w, r), wts)
 		} else if !websocket.IsWebSocketUpgrade(r) {
 			engineServer.HandleRequest(types.NewHttpContext(w, r))
 		} else if engineServer.Opts().Transports().Has("websocket") {

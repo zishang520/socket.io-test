@@ -47,8 +47,6 @@ github.com/xyproto/randomstring v1.0.5 h1:YtlWPoRdgMu3NZtP45drfy1GKoojuR7hmRcnhZ
 github.com/xyproto/randomstring v1.0.5/go.mod h1:rgmS5DeNXLivK7YprL0pY+lTuhNQW3iGxZ18UQApw/E=
 github.com/zishang520/engine.io-go-parser v1.3.2 h1:aEVrhQVhfk99Ct6htNffgHydUBC4dGclO/OXPz5CSy0=
 github.com/zishang520/engine.io-go-parser v1.3.2/go.mod h1:fg/R4V7aytYwUTu4lGcPdjenDSXFWLlkDAGewWVOo3o=
-github.com/zishang520/engine.io/v2 v2.4.5 h1:MEwUPIcCG8+qYn1iIGn9Xj2IPsgxSKGK2dr4dE3E1fk=
-github.com/zishang520/engine.io/v2 v2.4.5/go.mod h1:QgPegmhO5698HNkSQ0KaeHOy3YzCWdUNlX+iBxJ/e9E=
 github.com/zishang520/socket.io-go-parser/v2 v2.4.2 h1:ERfXBcoWvTkX1gtE5AH/dqyErRlgtF1NWE0J4LXPfOo=
 github.com/zishang520/socket.io-go-parser/v2 v2.4.2/go.mod h1:0GCoS+7SRZ/uQoI7PwqVlnE5V4/Jef4Rq/QtFBFF+YU=
 github.com/zishang520/socket.io/v2 v2.4.2 h1:HdZRTZFLQZYup4D3U9A9WrLhinU/YNzvcA7+HrBLTfc=
