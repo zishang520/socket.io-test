@@ -24,17 +24,17 @@ func Engine(addr string, certFile string, keyFile string) engine.Server {
 	serverOptions.SetTransports(types.NewSet(transports.POLLING, transports.WEBSOCKET, transports.WEBTRANSPORT))
 
 	httpServer := types.NewWebServer(nil)
-	httpServer.ListenTLS(addr, certFile, keyFile, nil)
+	// httpServer.ListenTLS(addr, certFile, keyFile, nil)
 	// httpServer.ListenHTTP3TLS(addr, certFile, keyFile, nil, nil)
 
 	engineServer := engine.New(httpServer, serverOptions)
 
-	// wts := httpServer.ListenWebTransportTLS(addr, certFile, keyFile, nil, nil)
+	wts := httpServer.ListenWebTransportTLS(addr, certFile, keyFile, nil, nil)
 	httpServer.HandleFunc("/engine.io/", func(w http.ResponseWriter, r *http.Request) {
 		// Upgrade http3
 		// wts.H3.SetQUICHeaders(w.Header())
 		if webtransport.IsWebTransportUpgrade(r) {
-			// engineServer.OnWebTransportSession(types.NewHttpContext(w, r), wts)
+			engineServer.OnWebTransportSession(types.NewHttpContext(w, r), wts)
 		} else if !websocket.IsWebSocketUpgrade(r) {
 			engineServer.HandleRequest(types.NewHttpContext(w, r))
 		} else if engineServer.Opts().Transports().Has("websocket") {

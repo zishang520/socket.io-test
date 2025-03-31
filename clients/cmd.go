@@ -38,7 +38,7 @@ func main() {
 		RootCAs:   rootCAs,
 		ClientCAs: rootCAs,
 	})
-	opts.SetTransports(types.NewSet(transports.Polling /*, transports.WebSocket, transports.WebTransport*/))
+	opts.SetTransports(types.NewSet( /*transports.Polling, transports.WebSocket*/ transports.WebTransport))
 
 	e := clients.Engine("https://127.0.0.1:8000", opts)
 	e.On("open", func(args ...any) {
