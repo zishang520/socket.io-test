@@ -2,7 +2,6 @@ package servers
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/zishang520/engine.io/v2/engine"
 	"github.com/zishang520/engine.io/v2/transports"
@@ -16,10 +15,10 @@ func Socket(addr string, certFile string, keyFile string) *socket.Server {
 	c.SetServeClient(true)
 	// c.SetConnectionStateRecovery(&socket.ConnectionStateRecovery{})
 	// c.SetAllowEIO3(true)
-	c.SetPingInterval(300 * time.Millisecond)
-	c.SetPingTimeout(200 * time.Millisecond)
-	c.SetMaxHttpBufferSize(1000000)
-	c.SetConnectTimeout(1000 * time.Millisecond)
+	// c.SetPingInterval(300 * time.Millisecond)
+	// c.SetPingTimeout(200 * time.Millisecond)
+	// c.SetMaxHttpBufferSize(1000000)
+	// c.SetConnectTimeout(1000 * time.Millisecond)
 	c.SetTransports(types.NewSet(transports.POLLING, transports.WEBSOCKET, transports.WEBTRANSPORT))
 	c.SetCors(&types.Cors{
 		Origin:      "*",

@@ -91,44 +91,56 @@ func s() {
 		RootCAs:   rootCAs,
 		ClientCAs: rootCAs,
 	})
-	opts.SetTransports(types.NewSet( /*transports.Polling, */ /*transports.WebSocket, */ transports.WebTransport))
+	opts.SetTransports(types.NewSet(transports.Polling /*transports.WebSocket, transports.WebTransport*/))
 
-	e, err := clients.Socket("https://127.0.0.1:8000", opts)
-	utils.Log().Error("socket %v", e)
+	manager := socket.NewManager("https://127.0.0.1:8000", opts)
+	// Listening to manager events
+	manager.On("error", func(errs ...any) {
+		utils.Log().Info("Manager Error: %v", errs)
+	})
+
+	manager.On("ping", func(...any) {
+		utils.Log().Info("Manager Ping")
+	})
+
+	manager.On("reconnect", func(...any) {
+		utils.Log().Info("Manager Reconnected")
+	})
+
+	manager.On("reconnect_attempt", func(...any) {
+		utils.Log().Info("Manager Reconnect Attempt")
+	})
+
+	manager.On("reconnect_error", func(errs ...any) {
+		utils.Log().Info("Manager Reconnect Error: %v", errs)
+	})
+
+	manager.On("reconnect_failed", func(errs ...any) {
+		utils.Log().Info("Manager Reconnect Failed: %v", errs)
+	})
+	io := manager.Socket("/custom", opts)
+	utils.Log().Error("socket %v", io)
 	if err != nil {
 		utils.Log().Fatal("exit %v", err)
 		return
 	}
-	e.On("open", func(args ...any) {
+	io.On("connect", func(args ...any) {
 		utils.SetTimeout(func() {
-			e.Emit("test", types.NewStringBufferString("88888"))
+			io.Emit("message", types.NewStringBufferString("88888"))
 		}, 1*time.Second)
-		utils.Log().Debug("close %v", args)
+		utils.Log().Debug("connect %v", args)
 	})
 
-	e.On("close", func(args ...any) {
-		utils.Log().Debug("close %v", args)
+	io.On("connect_error", func(args ...any) {
+		utils.Log().Debug("connect_error %v", args)
 	})
 
-	e.On("packet", func(args ...any) {
-		utils.Log().Warning("packet: %+v", args)
+	io.On("disconnect", func(args ...any) {
+		utils.Log().Warning("disconnect: %+v", args)
 	})
 
-	e.On("ping", func(...any) {
-		utils.Log().Warning("ping")
-	})
-
-	e.On("pong", func(...any) {
-		utils.Log().Warning("pong")
-	})
-
-	e.On("message", func(args ...any) {
-		e.Send(types.NewStringBufferString("6666666"), nil, nil)
-		utils.Log().Warning("message %v", args)
-	})
-
-	e.On("heartbeat", func(...any) {
-		utils.Log().Debug("heartbeat")
+	io.OnAny(func(args ...any) {
+		utils.Log().Warning("OnAny: %+v", args)
 	})
 }
 
