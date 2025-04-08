@@ -91,32 +91,32 @@ func s() {
 		RootCAs:   rootCAs,
 		ClientCAs: rootCAs,
 	})
-	opts.SetTransports(types.NewSet(transports.Polling /*transports.WebSocket, transports.WebTransport*/))
+	opts.SetTransports(types.NewSet(transports.Polling, transports.WebSocket /*transports.WebTransport*/))
 
-	manager := socket.NewManager("https://127.0.0.1:8000", opts)
+	manager := socket.NewManager("http://127.0.0.1:3000", opts)
 	// Listening to manager events
 	manager.On("error", func(errs ...any) {
-		utils.Log().Info("Manager Error: %v", errs)
+		utils.Log().Warning("Manager Error: %v", errs)
 	})
 
 	manager.On("ping", func(...any) {
-		utils.Log().Info("Manager Ping")
+		utils.Log().Warning("Manager Ping")
 	})
 
 	manager.On("reconnect", func(...any) {
-		utils.Log().Info("Manager Reconnected")
+		utils.Log().Warning("Manager Reconnected")
 	})
 
 	manager.On("reconnect_attempt", func(...any) {
-		utils.Log().Info("Manager Reconnect Attempt")
+		utils.Log().Warning("Manager Reconnect Attempt")
 	})
 
 	manager.On("reconnect_error", func(errs ...any) {
-		utils.Log().Info("Manager Reconnect Error: %v", errs)
+		utils.Log().Warning("Manager Reconnect Error: %v", errs)
 	})
 
 	manager.On("reconnect_failed", func(errs ...any) {
-		utils.Log().Info("Manager Reconnect Failed: %v", errs)
+		utils.Log().Warning("Manager Reconnect Failed: %v", errs)
 	})
 	io := manager.Socket("/custom", opts)
 	utils.Log().Error("socket %v", io)
@@ -125,14 +125,15 @@ func s() {
 		return
 	}
 	io.On("connect", func(args ...any) {
+		utils.Log().Warning("io iD %v", io.Id())
 		utils.SetTimeout(func() {
 			io.Emit("message", types.NewStringBufferString("88888"))
 		}, 1*time.Second)
-		utils.Log().Debug("connect %v", args)
+		utils.Log().Warning("connect %v", args)
 	})
 
 	io.On("connect_error", func(args ...any) {
-		utils.Log().Debug("connect_error %v", args)
+		utils.Log().Warning("connect_error %v", args)
 	})
 
 	io.On("disconnect", func(args ...any) {
@@ -142,6 +143,12 @@ func s() {
 	io.OnAny(func(args ...any) {
 		utils.Log().Warning("OnAny: %+v", args)
 	})
+
+	io.On("message-back", func(args ...any) {
+		// io.Emit("message", types.NewStringBufferString("88888"))
+		utils.Log().Question("message-back: %+v", args)
+	})
+
 }
 
 func main() {

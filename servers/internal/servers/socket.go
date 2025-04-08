@@ -26,7 +26,7 @@ func Socket(addr string, certFile string, keyFile string) *socket.Server {
 	})
 
 	httpServer := types.NewWebServer(nil)
-	socketio := socket.NewServer(httpServer, nil)
+	socketio := socket.NewServer(httpServer, c)
 
 	// WebTransport start
 	// WebTransport uses udp, so you need to enable the new service.
@@ -35,7 +35,7 @@ func Socket(addr string, certFile string, keyFile string) *socket.Server {
 	wts := customServer.ListenWebTransportTLS(addr, certFile, keyFile, nil, nil)
 
 	// Here is the core logic of the WebTransport handshake.
-	customServer.HandleFunc(socketio.Path(), func(w http.ResponseWriter, r *http.Request) {
+	customServer.HandleFunc(socketio.Path()+"/", func(w http.ResponseWriter, r *http.Request) {
 		if webtransport.IsWebTransportUpgrade(r) {
 			// You need to call socketio.ServeHandler(nil) before this, otherwise you cannot get the Engine instance.
 			socketio.Engine().(engine.Server).OnWebTransportSession(types.NewHttpContext(w, r), wts)

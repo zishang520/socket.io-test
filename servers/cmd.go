@@ -67,6 +67,10 @@ func s() {
 	socketio.Of("/custom", nil).On("connection", func(clients ...interface{}) {
 		client := clients[0].(*socket.Socket)
 		client.Emit("auth", client.Handshake().Auth)
+
+		client.On("message", func(args ...interface{}) {
+			client.Emit("message-back", args...)
+		})
 	})
 }
 
