@@ -45,5 +45,5 @@ goto default
         set "param=./..."
     )
     echo run %param%
-    call go run -race -gcflags "all=-N -l" %param%
+    call go run -race -gcflags "all=-N -l" -v %param%
     goto :EOF

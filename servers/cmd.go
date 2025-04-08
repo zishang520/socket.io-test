@@ -12,11 +12,10 @@ import (
 	"github.com/zishang520/engine.io/v2/log"
 	"github.com/zishang520/engine.io/v2/types"
 	"github.com/zishang520/engine.io/v2/utils"
+	"github.com/zishang520/socket.io/v2/socket"
 )
 
-func main() {
-	log.DEBUG = true
-
+func e() {
 	e := servers.Engine("127.0.0.1:8000", "server.crt", "server.key")
 
 	e.On("connection", func(sockets ...interface{}) {
@@ -46,11 +45,38 @@ func main() {
 	e.On("connection_error", func(e ...any) {
 		utils.Log().Debug("connection_error %v", e[0].(*types.ErrorMessage).Context)
 	})
+}
+
+func s() {
+	socketio := servers.Socket("127.0.0.1:8000", "server.crt", "server.key")
+
+	socketio.On("connection", func(clients ...interface{}) {
+		client := clients[0].(*socket.Socket)
+
+		client.On("message", func(args ...interface{}) {
+			client.Emit("message-back", args...)
+		})
+		client.Emit("auth", client.Handshake().Auth)
+
+		client.On("message-with-ack", func(args ...interface{}) {
+			ack := args[len(args)-1].(socket.Ack)
+			ack(args[:len(args)-1], nil)
+		})
+	})
+
+	socketio.Of("/custom", nil).On("connection", func(clients ...interface{}) {
+		client := clients[0].(*socket.Socket)
+		client.Emit("auth", client.Handshake().Auth)
+	})
+}
+
+func main() {
+	log.DEBUG = true
+
+	s()
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 	defer stop()
 	<-ctx.Done()
-
-	e.Close()
 }

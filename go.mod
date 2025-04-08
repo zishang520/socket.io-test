@@ -4,12 +4,18 @@ go 1.24.1
 
 replace github.com/zishang520/engine.io-client-go => ../engine.io-client-go
 
+replace github.com/zishang520/socket.io-client-go => ../socket.io-client-go
+
 replace github.com/zishang520/engine.io/v2 => ../engine.io
+
+replace github.com/zishang520/socket.io/v2 => ../socket.io
 
 require (
 	github.com/gorilla/websocket v1.5.3
-	github.com/zishang520/engine.io-client-go v0.0.0-00010101000000-000000000000
-	github.com/zishang520/engine.io/v2 v2.4.8
+	github.com/zishang520/engine.io-client-go v0.0.0-beta.4
+	github.com/zishang520/engine.io/v2 v2.4.10
+	github.com/zishang520/socket.io-client-go v0.0.0-00010101000000-000000000000
+	github.com/zishang520/socket.io/v2 v2.4.8
 )
 
 require (
@@ -25,6 +31,7 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
 	github.com/zishang520/engine.io-go-parser v1.3.2 // indirect
+	github.com/zishang520/socket.io-go-parser/v2 v2.4.4 // indirect
 	github.com/zishang520/webtransport-go v0.8.6 // indirect
 	go.uber.org/mock v0.5.0 // indirect
 	golang.org/x/crypto v0.35.0 // indirect

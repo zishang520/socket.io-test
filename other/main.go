@@ -1,58 +1,82 @@
 package main
 
 import (
-	"context"
-	"os"
-	"os/signal"
-	"syscall"
-
-	"github.com/zishang520/engine.io-client-go/engine"
-	"github.com/zishang520/engine.io-client-go/transports"
-	"github.com/zishang520/engine.io/v2/log"
-	"github.com/zishang520/engine.io/v2/types"
-	"github.com/zishang520/engine.io/v2/utils"
+	"fmt"
 )
 
+type Implements[T any] interface {
+	Prototype(T)
+
+	Proto() T
+}
+
+type Extends[T any] struct {
+	_proto_ T
+}
+
+func (e *Extends[T]) Prototype(_proto_ T) {
+	e._proto_ = _proto_
+}
+
+func (e *Extends[T]) Proto() T {
+	return e._proto_
+}
+
+type TestInterface interface {
+	Implements[TestInterface]
+
+	Out() string
+	F() string
+	Foo() string
+}
+
+type Test struct {
+	Extends[TestInterface]
+}
+
+func (t *Test) Out() string {
+	return t.Proto().F() + ":" + t.Foo()
+}
+
+func (t *Test) F() string {
+	return "Test F"
+}
+
+func (t *Test) Foo() string {
+	return "Test Foo"
+}
+
+type AInterface interface {
+	TestInterface
+}
+
+type A struct {
+	Test
+}
+
+func MakeA() *A {
+	s := &A{}
+	s.Prototype(s)
+
+	return s
+}
+
+func NewA() *A {
+	s := MakeA()
+	s.Construct()
+	return s
+}
+func (a *A) Construct() {
+}
+func (a *A) F() string {
+	return "A F" + ":" + a.Test.F()
+}
+
+func (a *A) Foo() string {
+	return "A Foo"
+}
+
 func main() {
-	log.DEBUG = true
-	opts := engine.DefaultSocketOptions()
-	opts.SetTransports(types.NewSet(transports.Polling /*transports.WebSocket, transports.WebTransport*/))
-
-	e := engine.NewSocket("http://127.0.0.1:4444", opts)
-	e.On("open", func(args ...any) {
-		e.Send(types.NewStringBufferString("88888"), nil, nil)
-		utils.Log().Debug("close %v", args)
-	})
-
-	e.On("close", func(args ...any) {
-		utils.Log().Debug("close %v", args)
-	})
-
-	e.On("packet", func(args ...any) {
-		utils.Log().Warning("packet: %+v", args)
-	})
-
-	e.On("ping", func(...any) {
-		utils.Log().Warning("ping")
-	})
-
-	e.On("pong", func(...any) {
-		utils.Log().Warning("pong")
-	})
-
-	e.On("message", func(args ...any) {
-		e.Send(types.NewStringBufferString("6666666"), nil, nil)
-		utils.Log().Warning("message %v", args)
-	})
-
-	e.On("heartbeat", func(...any) {
-		utils.Log().Debug("heartbeat")
-	})
-
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-
-	defer stop()
-	<-ctx.Done()
-
-	e.Close()
+	a := NewA()
+	fmt.Println(a.Out())
 }
