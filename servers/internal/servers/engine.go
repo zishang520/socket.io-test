@@ -4,11 +4,11 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"github.com/zishang520/engine.io/v2/config"
-	"github.com/zishang520/engine.io/v2/engine"
-	"github.com/zishang520/engine.io/v2/transports"
-	"github.com/zishang520/engine.io/v2/types"
-	"github.com/zishang520/engine.io/v2/webtransport"
+	"github.com/zishang520/socket.io/servers/engine/v3"
+	"github.com/zishang520/socket.io/servers/engine/v3/config"
+	"github.com/zishang520/socket.io/servers/engine/v3/transports"
+	"github.com/zishang520/socket.io/v3/pkg/types"
+	"github.com/zishang520/socket.io/v3/pkg/webtransport"
 )
 
 func Engine(addr string, certFile string, keyFile string) engine.Server {
@@ -21,7 +21,7 @@ func Engine(addr string, certFile string, keyFile string) engine.Server {
 	// serverOptions.SetPingInterval(120 * time.Second)
 	// serverOptions.SetPingTimeout(100 * time.Second)
 	serverOptions.SetMaxHttpBufferSize(1000000)
-	serverOptions.SetTransports(types.NewSet(transports.POLLING, transports.WEBSOCKET, transports.WEBTRANSPORT))
+	serverOptions.SetTransports(types.NewSet( /*engine.Polling, engine.WebSocket,*/ engine.WebTransport))
 
 	httpServer := types.NewWebServer(nil)
 	// httpServer.ListenHTTP3TLS(addr, certFile, keyFile, nil, nil)
@@ -36,7 +36,7 @@ func Engine(addr string, certFile string, keyFile string) engine.Server {
 			engineServer.OnWebTransportSession(types.NewHttpContext(w, r), wts)
 		} else if !websocket.IsWebSocketUpgrade(r) {
 			engineServer.HandleRequest(types.NewHttpContext(w, r))
-		} else if engineServer.Opts().Transports().Has("websocket") {
+		} else if engineServer.Transports().Has(transports.WEBSOCKET) {
 			engineServer.HandleUpgrade(types.NewHttpContext(w, r))
 		} else {
 			httpServer.DefaultHandler.ServeHTTP(w, r)

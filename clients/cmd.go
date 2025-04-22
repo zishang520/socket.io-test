@@ -12,12 +12,12 @@ import (
 	_ "app/clients/internal"
 	"app/clients/internal/clients"
 
-	"github.com/zishang520/engine.io-client-go/engine"
-	"github.com/zishang520/engine.io-client-go/transports"
-	"github.com/zishang520/engine.io/v2/log"
-	"github.com/zishang520/engine.io/v2/types"
-	"github.com/zishang520/engine.io/v2/utils"
-	"github.com/zishang520/socket.io-client-go/socket"
+	"github.com/zishang520/socket.io/clients/engine/v3"
+	"github.com/zishang520/socket.io/clients/engine/v3/transports"
+	"github.com/zishang520/socket.io/clients/socket/v3"
+	"github.com/zishang520/socket.io/v3/pkg/log"
+	"github.com/zishang520/socket.io/v3/pkg/types"
+	"github.com/zishang520/socket.io/v3/pkg/utils"
 )
 
 func e() {
@@ -91,9 +91,10 @@ func s() {
 		RootCAs:   rootCAs,
 		ClientCAs: rootCAs,
 	})
-	opts.SetTransports(types.NewSet(transports.Polling, transports.WebSocket /*transports.WebTransport*/))
+	opts.SetTransports(types.NewSet(transports.Polling, transports.WebSocket, transports.WebTransport))
+	opts.SetTryAllTransports(true)
 
-	manager := socket.NewManager("http://127.0.0.1:3000", opts)
+	manager := socket.NewManager("https://127.0.0.1:8000", opts)
 	// Listening to manager events
 	manager.On("error", func(errs ...any) {
 		utils.Log().Warning("Manager Error: %v", errs)

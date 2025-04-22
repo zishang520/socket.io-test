@@ -3,23 +3,22 @@ package servers
 import (
 	"net/http"
 
-	"github.com/zishang520/engine.io/v2/engine"
-	"github.com/zishang520/engine.io/v2/transports"
-	"github.com/zishang520/engine.io/v2/types"
-	"github.com/zishang520/engine.io/v2/webtransport"
-	"github.com/zishang520/socket.io/v2/socket"
+	"github.com/zishang520/socket.io/servers/engine/v3"
+	"github.com/zishang520/socket.io/servers/socket/v3"
+	"github.com/zishang520/socket.io/v3/pkg/types"
+	"github.com/zishang520/socket.io/v3/pkg/webtransport"
 )
 
 func Socket(addr string, certFile string, keyFile string) *socket.Server {
 	c := socket.DefaultServerOptions()
 	c.SetServeClient(true)
-	// c.SetConnectionStateRecovery(&socket.ConnectionStateRecovery{})
+	c.SetConnectionStateRecovery(&socket.ConnectionStateRecovery{})
 	// c.SetAllowEIO3(true)
 	// c.SetPingInterval(300 * time.Millisecond)
 	// c.SetPingTimeout(200 * time.Millisecond)
 	// c.SetMaxHttpBufferSize(1000000)
 	// c.SetConnectTimeout(1000 * time.Millisecond)
-	c.SetTransports(types.NewSet(transports.POLLING, transports.WEBSOCKET, transports.WEBTRANSPORT))
+	c.SetTransports(types.NewSet( /*engine.Polling, engine.WebSocket,*/ engine.WebTransport))
 	c.SetCors(&types.Cors{
 		Origin:      "*",
 		Credentials: true,

@@ -8,11 +8,11 @@ import (
 
 	"app/servers/internal/servers"
 
-	"github.com/zishang520/engine.io/v2/engine"
-	"github.com/zishang520/engine.io/v2/log"
-	"github.com/zishang520/engine.io/v2/types"
-	"github.com/zishang520/engine.io/v2/utils"
-	"github.com/zishang520/socket.io/v2/socket"
+	"github.com/zishang520/socket.io/servers/engine/v3"
+	"github.com/zishang520/socket.io/servers/socket/v3"
+	"github.com/zishang520/socket.io/v3/pkg/log"
+	"github.com/zishang520/socket.io/v3/pkg/types"
+	"github.com/zishang520/socket.io/v3/pkg/utils"
 )
 
 func e() {
